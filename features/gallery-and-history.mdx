@@ -1,0 +1,73 @@
+---
+title: "Gallery, History, and Output Settings"
+sidebarTitle: "Gallery & History"
+description: "Browse generated images in the local gallery, reuse prompts from history, set chat backgrounds, and control how images are embedded in messages."
+---
+
+QIG keeps a local record of your generated images and the prompts that produced them. Neither store follows you between devices or browsers—they are local-only caches scoped to the current SillyTavern account. This page covers the gallery, prompt history, background setting, and the output options that control how images land in your chat.
+
+## Gallery
+
+The gallery holds the most recent images QIG has generated during your sessions.
+
+- **Storage** — image blobs are stored in an account-scoped IndexedDB database. The manifest (the ordered list of entries) is stored separately as a compact record in account-scoped localStorage. IndexedDB holds the actual image data; localStorage only holds the lightweight index.
+- **Retention limit** — the newest **50 images** are kept. When a new image would push the total past 50, the oldest entry is evicted. QIG logs each eviction and shows a warning in the panel when older images are removed.
+- **Failed persistence** — if an image cannot be written to IndexedDB (for example, due to a browser storage quota), the entry is shown as **session-only** rather than being silently dropped. You can still see and use session-only images during the current page session; they disappear on reload.
+- **Keyboard shortcut** — `Ctrl+Shift+G` opens the gallery from anywhere in SillyTavern.
+
+<Note>
+  Gallery images are stored in your browser's IndexedDB and are isolated by the current SillyTavern account. They do not sync to the SillyTavern server and will not appear if you open QIG in a different browser or on a different device, even with the same account.
+</Note>
+
+## Prompt history
+
+Prompt history lets you revisit and reuse prompts from past generations.
+
+- **Storage** — stored in account-scoped localStorage with bounds on both the number of entries and the total stored size, so it does not grow unbounded.
+- **Reuse** — select any past entry to copy it back into the prompt field.
+- **Clear all** — removes all stored prompt history entries at once.
+- **Keyboard shortcut** — `Ctrl+Shift+H` opens prompt history from anywhere in SillyTavern.
+
+<Note>
+  Prompt history is local to each browser and isolated by SillyTavern account. It is not backed up or synced, and switching to a different browser or device starts with an empty history.
+</Note>
+
+## Logs
+
+The **Logs** panel inside QIG shows generation and provider diagnostics for the current page session. Log entries are not persisted—they reset on each page load. Use the logs when debugging a failed generation or diagnosing a provider issue.
+
+## Backgrounds
+
+Any generated image can be set as the SillyTavern background for the current chat. QIG offers two modes:
+
+<CardGroup cols={2}>
+  <Card title="Temporary" icon="clock">
+    Changes the live background immediately for the current view. The change does not survive a page reload—it is purely visual and in-memory.
+  </Card>
+  <Card title="Locked to chat" icon="lock">
+    Stores the chosen image in the chat's metadata. The background is restored every time you open that specific chat, even after a page reload or session restart.
+  </Card>
+</CardGroup>
+
+Trigger a background change manually from the batch viewer's image actions, or enable **Auto-set generated image as chat background** in the automation settings to apply the first result of every generation automatically.
+
+## Output modes
+
+Choose how generated images are embedded in chat messages:
+
+- **inline** — the image is embedded as a base64 data URL directly inside the chat message. The image is fully self-contained and does not depend on any external URL staying reachable.
+- **image_url** — the remote URL returned by the image provider is inserted into the chat message directly, without downloading or re-encoding the image.
+
+## Auto-insert target
+
+When **Auto-insert** is enabled, QIG places the generated image into a chat message automatically. The target message is controlled by this setting:
+
+| Option | Behaviour |
+|---|---|
+| **assistant** *(default)* | Inserts into the most recent AI / non-user message. |
+| **user** | Inserts into the most recent user message. |
+| **latest** | Inserts into the most recent chat message regardless of which party sent it. |
+
+## Manual insert target
+
+The same three options (assistant, user, latest) apply when you click **Insert** from the result popup or batch viewer. The manual insert target is a separate setting so your auto-insert preference and your manual preference can differ independently.

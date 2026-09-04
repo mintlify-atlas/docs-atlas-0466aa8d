@@ -1,0 +1,104 @@
+---
+title: "Settings Migration & Version History"
+sidebarTitle: "Migration"
+description: "Migration notes for QIG upgrades, settings export schema changes, rollback instructions, and a changelog summary for recent releases."
+---
+
+Most QIG updates carry forward existing settings without any action required. This page documents the cases where an upgrade changes how your data is stored, what a settings export contains, and what to do if you need to roll back.
+
+## Migration Notes
+
+The following migrations run automatically when QIG loads after an upgrade. You do not need to trigger them manually.
+
+### Legacy Setting Names
+
+The legacy **Edit LLM prompt before generation** setting is migrated to **Review before generating** on load.
+
+### Prompt Replacement Maps → Contextual Filters
+
+Legacy Prompt Replacement Maps are migrated into Contextual Filters automatically on settings load, preset import, and settings import. After migration the original maps are no longer read or written.
+
+### Prompt Templates
+
+Legacy Prompt Templates are ignored and cleaned up on load. They are not migrated to any current feature.
+
+### Settings Export Contents
+
+Settings exports no longer include templates or prompt replacement maps.
+
+Exports use **schema v7** and omit:
+- Provider credentials and API keys.
+- Private and reference images.
+- All Custom API trust fields and request-definition fields (endpoints, authentication behavior, request templates, polling rules).
+- Executable ComfyUI workflow graph bodies and custom-workflow component overrides.
+
+**Schema v5 imports remain supported.** Importing a v5 export retains any local credentials already stored for matching configurations.
+
+### Configurations (formerly Profiles + Presets)
+
+<Warning>
+This migration runs once on first load after upgrading to **QIG 3.4.0**. It consolidates three separate stores into a single unified **Configurations** store. Read this section before upgrading if you have many named profiles or presets.
+</Warning>
+
+Connection Profiles, Generation Presets, and ComfyUI Workflow Presets are merged into Configurations on first load after upgrading. The merge rules are:
+
+- Records sharing the **exact same name** and a **compatible provider** are merged into one Configuration. When multiple records match, the ComfyUI Workflow Preset wins over the Generation Preset, which wins over the Connection Profile.
+- Records that did not match anything become their own Configuration.
+- Name collisions among non-matching records get a disambiguating suffix, for example `Krea (Comfy workflow 2)`.
+
+The three legacy stores are **copied, not moved**. They are left byte-identical as a rollback copy and are never written to again. Downgrading to a previous version branch restores the previous behaviour with your original records intact.
+
+### Unscoped Gallery and Prompt History Data
+
+Unscoped legacy `qig_gallery` and `qig_prompt_history` data is left untouched and is not assigned to the current account because its owner cannot be verified.
+
+---
+
+## Settings Export Schema v7
+
+Configurations are stored under the existing `generationPresets` property in the export JSON. There is no separate `connectionProfiles` or `comfyWorkflows` key in v7 exports. This means a v7 export is structurally compatible with older importers that read `generationPresets`, although those importers will not understand Configuration-specific fields.
+
+### Import Safety
+
+When importing a settings file:
+
+- A **matching Configuration ID** (same ID already exists locally) updates safe fields — display name, style, prompt behavior, model, size, and similar — while retaining your local endpoint, API key, reference images, and workflow. Private values are never overwritten by an import.
+- An **unmatched Configuration ID** (no local record with that ID) creates a safe shell with no private values. You supply the endpoint and key locally after import.
+
+Custom API trust fields, request-definition fields, and ComfyUI workflow bodies are excluded from portable exports and ignored on import. Your local graph and overrides remain unchanged regardless of what an export contains.
+
+---
+
+## Rollback
+
+If an update breaks your setup, switch back to the previous version line without leaving SillyTavern:
+
+<Steps>
+  <Step title="Open the extension manager">
+    Go to **Extensions → Manage extensions → Quick Image Gen**.
+  </Step>
+  <Step title="Select the previous version branch">
+    Open the branch selector and pick the branch for the previous version line, for example `v2.8`.
+  </Step>
+  <Step title="Reload when prompted">
+    SillyTavern will reload with the selected version.
+  </Step>
+</Steps>
+
+<Note>
+`main` is always the current release. When a new version line starts, a `v<major.minor>` branch is kept at the last release of the previous line. Rolling back does **not** delete your settings. Options added by newer versions are simply ignored until you return to `main`.
+</Note>
+
+---
+
+## Version Changelog
+
+| Version | Highlights |
+|---|---|
+| **3.4.0** | **Breaking:** Configurations replace Connection Profiles, Generation Presets, and ComfyUI Workflow Presets. ComfyUI Refresh now lists text encoders and VAEs. Custom workflow choices discovery via Inspect workflow choices. Sampling group consolidates sampler and scheduler. |
+| **3.3.0** | `/qig quiet=true` mode for silent generation with pipe output. |
+| **3.2.0** | Bug fixes: reverse proxy posting to correct endpoint; separate-AI profile no longer falls back to main chat AI; batch picker reopens for multi-image palette inject; insert targets and undo transactions corrected. |
+| **3.1.1** | Prompt review back button re-runs the Text AI request instead of replaying a cached result. Per-message palette button now inserts into the correct source message. |
+| **3.1.0** | Panel and dialog improvements: Escape focus handling, `Ctrl+Enter` scoping, floating status accuracy, batch viewer arrow keys, mobile toolbar opacity, theme colour tokens, repeated tag deduplication, settings search accuracy. |
+| **3.0.1** | Palette icons use SillyTavern native controls. NovelAI size mapping to nearest official resolution. Reverse Proxy image materialisation before generation finishes. Light-theme colour fixes. |
+| **3.0.0** | Built-in LLM instructions are now readable and editable. Reset buttons for inject template, extraction regex, and chat-image system prompt. Use-case guide. Rollback instructions and `v2.8` branch. |

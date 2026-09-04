@@ -1,0 +1,78 @@
+---
+title: "Quick Image Gen: AI Image Generation for SillyTavern"
+sidebarTitle: "Introduction"
+description: "Quick Image Gen brings 18 AI image providers, 44 style presets, and deep roleplay integration directly into SillyTavern's chat interface."
+---
+
+Quick Image Gen (QIG) is a SillyTavern extension that turns your chat interface into a full image-generation studio. Whether you want a single illustration of a scene you just played through or a fully automated image that fires after every AI reply, QIG handles the entire pipeline — choosing what to prompt, how to style it, which backend to send it to, and where the result lands in the chat — without ever leaving SillyTavern.
+
+## What problem does QIG solve?
+
+Generating images during roleplay normally means copying text out of the chat, switching to a separate tool, writing a prompt from scratch, and pasting the result back. QIG removes every one of those steps. Its **Chat scene** prompt source reads your chat context directly, an optional LLM rewrite converts that context into a proper image prompt, and the finished image is inserted back into the right message automatically. The result is an image that is grounded in the actual scene, not a manually typed approximation of it.
+
+## Key features
+
+- **18 image providers** — from free, no-key Pollinations to local A1111/ComfyUI, professional APIs, and fully custom endpoints
+- **44 built-in style presets** — Anime, Photorealistic, Cyberpunk, Watercolor, Manga, and more
+- **Three LLM prompt modes** — Tags (Danbooru), Natural description, or a fully custom instruction
+- **Two-step chat-scene pipeline** — first distil the scene into a plain visual description, then reformat it into the selected style
+- **Contextual filters** — keyword- or LLM-matched rules that transform the prompt based on what is happening in the current scene
+- **Batch generation** — up to 10 variants from one prompt, with sequential seeds and a built-in batch viewer
+- **Auto-generation** — trigger an image automatically after every N AI replies, with a configurable delay
+- **Inject mode** — instruct your Text AI to embed image tags in its replies; QIG extracts and generates from them
+- **Configurations** — save a complete provider + style + prompt setup as a named preset and switch between setups in one click
+- **Character overrides** — lock a specific prompt, style, and reference images to a character card
+- **Gallery and prompt history** — browse past results and reuse prompts, isolated per SillyTavern account
+- **Keyboard shortcuts** — generate, open the gallery, and browse prompt history without reaching for the mouse
+
+## Requirements
+
+<Note>
+  QIG requires **SillyTavern 1.14.0 or newer**. It depends on extension manifest v3 and media-array support introduced in that release. Older SillyTavern builds will not load the extension.
+</Note>
+
+Most providers run entirely in the browser with no additional setup. **CivitAI** and **Replicate** users running SillyTavern in `basicAuthMode: true` need the optional server plugin included in `server-plugin/`, because the built-in CORS proxy is blocked when a provider request also needs its own `Authorization` header.
+
+**Current version:** 3.4.0 &nbsp;·&nbsp; **License:** MIT
+
+## Providers
+
+QIG ships with 18 image backends. All run browser-only except where noted.
+
+| Provider | ID | API Key Required | Notes |
+|---|---|---|---|
+| Pollinations | `pollinations` | No | Free by default (`flux`); paid models also available |
+| NovelAI | `novelai` | Yes | |
+| GPT Image (OpenAI) | `gptimage` | Yes | |
+| ArliAI | `arliai` | Yes | |
+| Routeway | `routeway` | Yes | |
+| Navy.ai | `navy` | Yes | |
+| NanoGPT | `nanogpt` | Yes | |
+| Chutes | `chutes` | Yes | |
+| CivitAI | `civitai` | Yes | Server plugin needed in `basicAuthMode` |
+| Nanobanana (Gemini) | `nanobanana` | Yes | |
+| Stability AI | `stability` | Yes | |
+| Replicate | `replicate` | Yes | Server plugin needed in `basicAuthMode` |
+| Fal.ai | `fal` | Yes | |
+| Together AI | `together` | Yes | |
+| Z.AI | `zai` | Yes | |
+| Local (A1111 / ComfyUI) | `local` | No | |
+| Reverse Proxy | `proxy` | No | OpenAI-compatible proxy URL |
+| Custom API | `custom` | Optional | JSON, multipart, or async polling |
+
+## Explore QIG
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Install QIG and generate your first image in under five minutes.
+  </Card>
+  <Card title="Providers Overview" icon="server" href="/providers/overview">
+    Compare all 18 backends, API key requirements, and provider-specific options.
+  </Card>
+  <Card title="Prompt System" icon="wand-magic-sparkles" href="/generation/prompt-system">
+    Understand LLM styles, the two-step pipeline, wildcards, and quality tags.
+  </Card>
+  <Card title="Contextual Filters" icon="filter" href="/features/contextual-filters">
+    Build keyword and LLM-matched rules that transform prompts based on scene content.
+  </Card>
+</CardGroup>

@@ -1,0 +1,123 @@
+---
+title: "ComfyUI Workflow Placeholder Variables"
+sidebarTitle: "ComfyUI Variables"
+description: "Full reference for all QIG placeholder variables available in custom ComfyUI API-format workflow JSON, including typed values, reference images, and output selection."
+---
+
+Custom ComfyUI workflows in QIG use API-format JSON exported from ComfyUI's **Save (API Format)** option. Paste that JSON into the **Custom Workflow JSON** field in the Local ComfyUI provider settings. QIG accepts either a bare API node map or a full request envelope that contains a `prompt` node map.
+
+Before sending a workflow to ComfyUI's `/prompt` endpoint, QIG performs a single substitution pass over every string value in the JSON, replacing any recognized `%placeholder%` tokens with their resolved values. Because replacement is a single pass over the original value, placeholder-like text that appears *inside* a generated prompt is never processed again.
+
+<Warning>
+ComfyUI workflows are executable programs. Custom nodes can perform filesystem, network, or process side effects. Review your workflow JSON carefully before saving or running it.
+</Warning>
+
+## Placeholder Table
+
+| Placeholder | Value |
+|---|---|
+| `%prompt%` | Final positive prompt after LLM generation, style tags, quality tags, ST Style, Contextual Filters, and wildcard expansion. |
+| `%negative%` | Final negative prompt after ST Style, Contextual Filters, and wildcard expansion. |
+| `%seed%` | Resolved seed for this image. If the seed setting is `-1`, QIG resolves a random seed before sending the workflow. |
+| `%width%` | Current width setting. |
+| `%height%` | Current height setting. |
+| `%steps%` | Current steps setting. |
+| `%cfg%` | Current CFG scale setting. |
+| `%denoise%` | Current ComfyUI denoise setting. |
+| `%clip_skip%` | Current ComfyUI clip skip setting. |
+| `%clip_stop_at_layer%` | Negative typed CLIP layer value (`-abs(clip skip)`) for `CLIPSetLastLayer.stop_at_clip_layer`. |
+| `%sampler%` | ComfyUI sampler name derived from the selected sampler. |
+| `%scheduler%` | Current ComfyUI scheduler setting. |
+| `%model%` | Current Local Model field value. |
+| `%reference_image%` | Uploaded ComfyUI image filename for the Local reference image, or an empty string when no reference image is selected. |
+| `%reference_image_1%`, `%reference_image_2%`, … | Numbered uploaded reference filenames. The current Local UI supplies one reference, so later indices are empty. |
+| `%batch_index%` | Zero-based QIG batch item index. |
+| `%batch_count%` | Total number of requested QIG batch items. |
+| `%client_id%` | Run-specific ComfyUI client ID also sent with the prompt request. |
+| `%filename_prefix%` | QIG filename prefix for output nodes that accept one. |
+
+## Typed Values
+
+When a node input's value is **exactly** a placeholder token and nothing else, QIG preserves numeric types where possible before submitting the workflow. This means ComfyUI receives a number rather than a string, which is what most node inputs expect.
+
+```json
+{
+  "inputs": {
+    "seed": "%seed%",
+    "width": "%width%",
+    "cfg": "%cfg%"
+  }
+}
+```
+
+Those three fields become numbers in the submitted workflow. When a placeholder is embedded inside a longer string, the entire value becomes a string:
+
+```json
+{
+  "inputs": {
+    "filename_prefix": "qig_%seed%"
+  }
+}
+```
+
+Here `filename_prefix` is a string such as `"qig_1234567890"`.
+
+### CLIPSetLastLayer
+
+For the `CLIPSetLastLayer` node's `stop_at_clip_layer` input, use the dedicated `%clip_stop_at_layer%` placeholder rather than building the negative yourself. It resolves to `-abs(clip skip)` as a typed negative integer:
+
+```json
+{
+  "inputs": {
+    "stop_at_clip_layer": "%clip_stop_at_layer%"
+  }
+}
+```
+
+Using a string expression like `"-%clip_skip%"` would produce a string, not the typed integer that `CLIPSetLastLayer` requires.
+
+## Reference Images
+
+To pass the Local reference image into a custom workflow:
+
+1. Add a **LoadImage** node in ComfyUI.
+2. Export the workflow in **API Format**.
+3. Set that node's `image` input value to `%reference_image%`.
+
+```json
+{
+  "inputs": {
+    "image": "%reference_image%"
+  }
+}
+```
+
+If no Local reference image is selected when generation runs, `%reference_image%` becomes an empty string. QIG uploads the reference image to ComfyUI only when the workflow JSON contains a reference placeholder, preserving the filename (including any server-side collision rename or subfolder) that ComfyUI returns.
+
+For workflows that accept multiple numbered reference images, use `%reference_image_1%`, `%reference_image_2%`, and so on.
+
+## Output Selection
+
+QIG reads every image in completed history in deterministic node and image order. Two Local ComfyUI settings control which images are returned:
+
+- **Output Node IDs** — leave empty to accept images from every output node, or enter comma-separated node IDs to limit collection to specific nodes.
+- **Image Index** — set to `-1` to collect every image from each matching node, or a zero-based index to select one specific image from each matching node.
+
+A completed workflow that produces no matching image fails immediately rather than waiting for the generation timeout.
+
+## Safety and Cancellation
+
+Cancellation first targets the submitted prompt via ComfyUI's Jobs API when the server supports it. On older servers without the Jobs API, QIG removes the pending item through the queue API instead. QIG **never** sends a bodyless global interrupt.
+
+The optional **Allow targeted legacy interrupt** setting is an explicit opt-in because older `/interrupt` implementations may still stop work belonging to another user on a shared server. Enable it only when that risk is acceptable for your setup.
+
+If history polling times out, QIG makes the same safe targeted-or-queue cleanup attempt before reporting the timeout. Servers without the Jobs API may continue already-running work.
+
+## Notes
+
+<Note>
+- Placeholders are only replaced inside JSON **string** values. Numeric node inputs that are already numbers in the JSON are not scanned.
+- Use **API-format JSON** (from ComfyUI's Save API Format export), not the regular visual workflow export. Visual-format JSON, invalid JSON, oversized JSON, and deeply nested JSON are all rejected before submission. Clear the custom workflow field to fall back to QIG's built-in workflow.
+- LoRA injection and the built-in upscale node are not added to custom graphs. Add the corresponding nodes and placeholders directly in ComfyUI and re-export.
+- Click **Inspect workflow choices** in QIG to query the node classes used by your custom graph. QIG exposes a direct text input only when a node advertises an option as a dropdown choice, including supported third-party loaders. Custom nodes define what their choices do — review them before changing a value.
+</Note>

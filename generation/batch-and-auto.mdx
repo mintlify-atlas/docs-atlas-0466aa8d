@@ -1,0 +1,56 @@
+---
+title: "Batch Generation & Auto-Gen Settings"
+sidebarTitle: "Batch & Auto-Gen"
+description: "Generate multiple image variants in one run, increment seeds across a batch, and configure automatic generation triggered after every AI reply."
+---
+
+QIG can generate more than one image per click and fire automatically after each AI response. Batch generation explores prompt variations in a single run; auto-generation keeps the conversation visually illustrated without manual interaction.
+
+## Batch Generation
+
+Set **Batch count** to any value from 1 to 10. Each image in the batch is generated from the same assembled prompt — the same source text, the same LLM rewrite result, the same style prefix and quality tags.
+
+### Sequential Seeds
+
+Enable **Sequential seeds** to increment the seed value between each image in the batch. Starting from the configured seed, each subsequent image adds 1. Seeds are bounded to the documented valid range for the active provider; sequential batches that would exceed the maximum wrap modulo 2^32.
+
+Sequential seeds produce a spread of related but distinct results. Without them, each image in the batch is independently random (or all deterministic at the same fixed seed, if one is set).
+
+### Batch Viewer
+
+After a batch completes, the batch viewer opens with a thumbnail strip of all results. From the viewer you can:
+
+- Browse results with **Previous / Next** navigation.
+- Edit the prompt that was used for any individual image.
+- **Insert all** images into the chat at once, or **insert one** at a time.
+
+<Note>
+  Pressing **Cancel** releases the QIG interface immediately and discards any late-arriving results. QIG requests provider-side cancellation where the provider supports it, but remote work may continue when a provider cannot cancel an already-accepted job. Cancelled and failed drafts are not added to prompt history.
+</Note>
+
+## Auto-Generation
+
+Auto-generation fires a new image generation automatically after each qualifying AI response. It is the foundation for hands-free illustration of a running roleplay.
+
+<Steps>
+  <Step title="Enable auto-generate">
+    Turn on **Auto-generate after AI response** in the Automation & Delivery section.
+  </Step>
+  <Step title="Set reply frequency">
+    Set **Generate every N AI replies** (1 to 100, default 1) to fire only after every N eligible assistant replies. At `1`, every reply triggers a generation. At `5`, only every fifth reply does.
+  </Step>
+  <Step title="Set the delay">
+    Set **Delay (seconds)** (0 to 60, default 0.5) to wait before generating after the triggering reply. A short delay lets the chat UI settle before QIG starts the request.
+  </Step>
+</Steps>
+
+Auto-generation uses whatever **Prompt source** is currently selected. With **Chat scene**, each auto-generation illustrates the most recent message (or the configured message range). With **AI-tagged**, auto-generation fires for each image tag the Text AI embeds in its replies — see [Inject Mode](/features/inject-mode).
+
+## Auto-Set Background
+
+**Auto-set generated image as chat background** applies the first result from an auto-generation as the chat background. Two persistence modes are available:
+
+- **Temporary** — changes the live background for the current view only. The background is not stored; a page reload restores the previous background.
+- **Locked to chat** — stores the background in chat metadata. The image persists as the background for that specific chat across sessions and page reloads.
+
+You can also set a background manually from the batch viewer without enabling auto-set. Trigger it from any result by using the set-as-background action on that image.

@@ -1,0 +1,70 @@
+---
+title: "Inject Mode: AI-Authored Image Tags"
+sidebarTitle: "Inject Mode"
+description: "Let your Text AI embed image tags in chat replies, then have QIG automatically extract and generate images from each tagged prompt."
+---
+
+Inject mode hands prompt authorship to your Text AI. Instead of QIG pulling context from the chat or asking you for a prompt, your AI model writes image-generation instructions directly into its own chat replies as structured tags. QIG then extracts those tags and generates images from them. The result is a hands-free pipeline where narrative and imagery co-evolve as the story progresses.
+
+Inject is **auto-only**. To use it, set **Prompt source** to `AI-tagged` and enable **Auto-generate after AI response**. Manual generation does not apply to this mode.
+
+<Note>
+  `mode=inject` with `quiet=true` is not supported. The inject pipeline requires a prompt to exist inside the AI's reply tag; there is nothing to run quietly without one.
+</Note>
+
+## How it works
+
+<Steps>
+  <Step title="QIG injects instructions into the AI context">
+    Before your Text AI replies, QIG inserts a prompt template into the conversation context (at the `afterScenario` position) instructing the AI to emit one or more image tags inside its reply.
+  </Step>
+  <Step title="QIG extracts tags from the AI reply">
+    After the AI responds, QIG scans the reply text using the configured extraction regex and collects every matched tag. In automatic mode, only the first matched tag is processed per reply.
+  </Step>
+  <Step title="QIG generates images from the extracted prompts">
+    Each extracted prompt is sent to the active image provider using your current configuration—style, size, quality tags, contextual filters, and all other settings apply normally.
+  </Step>
+  <Step title="Images are delivered according to Tag handling">
+    Each generated image is attached to the chat according to the **Tag handling** setting you have chosen.
+  </Step>
+</Steps>
+
+## Supported tag formats
+
+QIG recognises two tag formats in AI replies:
+
+```xml
+<image>a sunlit forest clearing, soft dappled light, watercolor style</image>
+```
+
+```html
+<pic prompt="a sunlit forest clearing, soft dappled light, watercolor style">
+```
+
+The first format uses the configurable tag name (default: `image`). The second is a legacy format kept for backward compatibility. Both can appear in the same reply.
+
+## Tag handling
+
+Choose how extracted images are delivered:
+
+- **Replace tag and attach to tagged message** — the used tag is removed from the AI reply text and the generated image is attached directly to the message that contained the tag. This keeps the chat clean with no visible tag remnants.
+- **Separate generated-image message** — QIG creates a new, distinct chat message to hold the generated image. The source message with the tag is left intact unless **Auto-clean** is enabled, in which case the tag is removed from the source message after the image message is created.
+
+## Inject settings
+
+| Setting | Description |
+|---|---|
+| **Tag name** | The XML element name QIG looks for in AI replies. Default: `image`. Changing this updates the default injection template and extraction regex. |
+| **Inject prompt template** | The instruction text inserted into the AI context before generation. Use **Reset to default** to restore the built-in template for the current tag name. |
+| **Extraction regex** | The regular expression used to locate tags in AI replies. Use **Reset to default** to restore the built-in regex for the current tag name. |
+| **Injection position** | Where in the context the instruction is inserted. Fixed at `afterScenario`. |
+| **Tag handling** | Controls how generated images are placed (see above). |
+| **Auto-clean** | When using the separate-message mode, removes the original tag from the source message after the image is created. |
+
+## Test Inject Detection
+
+The **Test Inject Detection** button scans the current chat messages for any tags that would be extractable under the current regex—without generating any images. Use this to verify your tag name and regex are working correctly before starting a live session.
+
+## Legacy inline settings
+
+If your previous QIG configuration used the old `inline` tag handling option, it is automatically migrated to **Replace tag and attach to tagged message** on load. That was the prior runtime behaviour for inline settings, so generated images appear in the same place they always did.

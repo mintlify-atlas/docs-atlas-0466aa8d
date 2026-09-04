@@ -1,0 +1,69 @@
+---
+title: "Contextual Filters: Scene-Aware Prompt Transforms"
+sidebarTitle: "Contextual Filters"
+description: "Match conditions against the current chat scene and automatically modify prompts before generation—using keywords or an LLM concept check."
+---
+
+Contextual Filters are QIG's native prompt-transformation system. Each filter watches the current chat scene and, when its condition matches, appends tokens to your positive or negative prompt, strips unwanted terms, or locks the seed—all before the image request is sent. Unlike style presets or quality tags, filters react to *what is happening in the scene*, so your prompt shifts automatically as the story does.
+
+## Match modes
+
+Filters can trigger in three ways:
+
+- **Keyword OR** — fires when *any* keyword in the list appears anywhere in the current scene context.
+- **Keyword AND** — fires only when *every* keyword in the list is present in the scene context.
+- **LLM concept** — sends a yes/no question to your connected Text AI asking whether a particular concept is present. Useful for abstract ideas that can't be captured with a single word.
+
+<Note>
+  LLM concept matching costs one additional Text AI call per generation. If you use several concept-match filters simultaneously, each fires its own request. Keep that in mind when generating at speed or on metered APIs.
+</Note>
+
+## Filter fields
+
+Each filter exposes the following settings:
+
+| Field | Purpose |
+|---|---|
+| **Name** | Display label shown in the filter manager and summary cards. |
+| **Keywords** | Comma-separated list of keywords evaluated by Keyword OR / AND modes. |
+| **Description** | Free-text note shown in the filter manager to remind you what the filter does. |
+| **Positive** | Tokens appended to the positive prompt when the filter matches. |
+| **Negative** | Tokens appended to the negative prompt when the filter matches. |
+| **Remove positive** | Tokens stripped from the positive prompt before **Positive** is appended. Remove mode deletes exact tokens. |
+| **Remove negative** | Tokens stripped from the negative prompt before **Negative** is appended. Remove mode deletes exact tokens. |
+| **Priority** | Numeric priority; higher-priority filters run first in the transformation chain. |
+| **Seed override** | Locks the seed to a specific value whenever this filter fires. |
+
+<Tip>
+  Use seed overrides when a specific type of scene should always produce a consistent look. For example, a battle-scene filter can pin the seed so dramatic lighting is reproducible across that scene type, while leaving other scenes free to vary.
+</Tip>
+
+## Scope
+
+Every filter has a **scope** that controls which generations it applies to:
+
+- **global** — applies to every generation regardless of which character or card is active.
+- **card** — applies only when the current card matches; the filter is tied to the card key.
+- **character** — applies only for a specific character; the filter is tied to that character's ID.
+
+Scoping lets you build a library of general-purpose filters at the global level and then layer character- or card-specific modifications on top without touching the shared ones.
+
+## Filter pools
+
+Filters can be grouped into named **pools**. Pools can be enabled or disabled independently for each scope (global, card, and character), giving you a way to bulk-toggle entire groups of filters without changing the enabled state of individual filters inside the pool.
+
+Typical uses for pools:
+
+- A "safe" pool and an "explicit" pool that you toggle based on the current session.
+- A "location: tavern" pool and a "location: forest" pool to switch visual themes quickly.
+- A per-character pool that enables only when that character is active.
+
+## Import and export
+
+The Contextual Filters manager popup includes import and export buttons. Exported filter sets are portable: you can share them with other QIG users or move them between SillyTavern installs.
+
+## Legacy migration
+
+<Note>
+  If you used **Prompt Replacement Maps** in an older version of QIG, they are automatically migrated into Contextual Filters the first time the new version loads your settings. Old Prompt Templates are ignored and removed. Your existing replacement logic is preserved as equivalent keyword filters.
+</Note>

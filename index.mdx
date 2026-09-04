@@ -1,20 +1,77 @@
 ---
-title: "Introduction"
-description: "Welcome to your project"
+title: "Quick Image Gen: AI Image Generation for SillyTavern"
+sidebarTitle: "Home"
+description: "Quick Image Gen is a SillyTavern extension that brings AI image generation directly into your chats — 18 providers, 44 styles, LLM-assisted prompting, and local backend support."
 ---
 
-Write a short description of your product here. What it does, who it's for, and what they can accomplish with it.
+Quick Image Gen (QIG) integrates AI image generation natively into SillyTavern. Choose from 18 cloud and local providers, apply one of 44 style presets, let your connected Text AI write and refine prompts from the current chat scene, and deliver images inline — all without leaving the chat interface.
 
-<Tip>
-  Ready to make this your own? Start by editing this page. Update your `docs.json` file to customize your site. Then fill out the [Quickstart](/quickstart) page.
-</Tip>
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Generate your first image in under five minutes with the Quick Setup wizard.
+  </Card>
+  <Card title="Installation" icon="download" href="/installation">
+    Install QIG from the SillyTavern extension manager in one step.
+  </Card>
+  <Card title="Providers" icon="server" href="/providers/overview">
+    Browse all 18 supported backends — from free Pollinations to local A1111 and ComfyUI.
+  </Card>
+  <Card title="Prompt System" icon="wand-magic-sparkles" href="/generation/prompt-system">
+    Master LLM-assisted prompting, style presets, wildcards, and the two-step pipeline.
+  </Card>
+</CardGroup>
 
-<Card title="Quickstart" icon="rocket" href="/quickstart">
-  This card links to the quickstart page in your project.
-</Card>
-<Card title="Components" icon="puzzle-piece" href="https://mintlify.com/docs/components">
-  Add cards, callouts, steps, tabs, and more to design and structure your pages.
-</Card>
-<Card title="Settings" icon="gear" href="https://mintlify.com/docs/organize/settings">
-  Set your site name, branding, and navigation in the `docs.json` file.
-</Card>
+## What Quick Image Gen Does
+
+QIG embeds directly in the SillyTavern sidebar and organizes every setting around the generation workflow: pick a provider, choose a prompt source, select a style, and generate. Everything else — advanced controls, contextual filters, character overrides — sits behind progressive disclosure so the panel stays usable at a glance.
+
+<CardGroup cols={3}>
+  <Card title="18 Providers" icon="cloud" href="/providers/overview">
+    Pollinations, NovelAI, GPT Image, Stability AI, Replicate, Fal.ai, CivitAI, and more.
+  </Card>
+  <Card title="44 Style Presets" icon="palette" href="/generation/style-presets">
+    From Anime and Photorealistic to Ukiyo-e and Psychedelic — one click to apply.
+  </Card>
+  <Card title="LLM Prompting" icon="brain" href="/generation/prompt-system">
+    Three prompt modes — Tags, Natural description, and Custom instruction.
+  </Card>
+  <Card title="Contextual Filters" icon="filter" href="/features/contextual-filters">
+    Keyword and AI-concept match rules that modify prompts automatically.
+  </Card>
+  <Card title="Configurations" icon="bookmark" href="/generation/configurations">
+    Named setups that store provider, model, style, and every generation parameter.
+  </Card>
+  <Card title="Slash Commands" icon="terminal" href="/reference/slash-commands">
+    Automate generation from Quick Replies with /qig, /qig-auto, and /qig-cancel.
+  </Card>
+</CardGroup>
+
+## Key Capabilities
+
+- **Multi-backend support** — 18 providers including free options (Pollinations), paid APIs (NovelAI, GPT Image, Stability AI, Replicate, Fal.ai, Together AI), and fully local backends (A1111, ComfyUI)
+- **Chat-scene generation** — pulls context from selected chat messages and optionally rewrites it into an image prompt via your connected Text AI
+- **Two-step prompt pipeline** — first pass distills a visual scene; second pass formats it into the chosen style
+- **Batch generation** — 1–10 images per run with sequential seeds and a batch viewer
+- **Auto-generation** — fires after every N AI responses with a configurable delay
+- **Inject mode** — AI emits `<image>` tags inside replies; QIG extracts and generates automatically
+- **Character overrides** — save per-character prompts, styles, and reference images
+- **Gallery and history** — IndexedDB-backed image gallery and prompt history, both scoped to your SillyTavern account
+
+<Steps>
+  <Step title="Install the extension">
+    In SillyTavern, go to **Extensions → Install from URL** and paste `https://github.com/platberlitz/sillytavern-image-gen`. See [Installation](/installation) for details.
+  </Step>
+  <Step title="Pick a provider">
+    Open the QIG panel and complete the **Quick Setup** wizard — select a provider and paste an API key if required. See [Providers](/providers/overview) for the full list.
+  </Step>
+  <Step title="Choose a prompt source">
+    Set **Prompt source** to `Chat scene` to generate from the current conversation, or `Manual` to type your own prompt.
+  </Step>
+  <Step title="Generate">
+    Click **Generate** or press `Ctrl+Enter`. The result appears in the chat inline.
+  </Step>
+</Steps>
+
+<Note>
+  Quick Image Gen requires SillyTavern 1.14.0 or newer (extension manifest v3 and media-array support).
+</Note>

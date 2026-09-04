@@ -1,47 +1,113 @@
 ---
-title: "Quickstart"
-description: "Begin with a guide on the fastest path to a successful outcome"
+title: "Generate Your First Image with Quick Image Gen (QIG)"
+sidebarTitle: "Quickstart"
+description: "Install Quick Image Gen, pick Pollinations as your free provider, and generate a scene image from your SillyTavern chat in under five minutes."
 ---
 
-Describe how someone begins using your product. What is the first thing they need to do? Are there any prerequisites?
-
-A quickstart should take someone from zero to using your product. They'll get a quick win and a sense of what they can accomplish.
-
-## Prerequisites
-
-Before you begin, you must have:
-
-- Requirement one (for example, Node.js 18+, a free account, an API key)
-- Requirement two (for example, a compatible device, a compatible browser, a compatible operating system)
-
-## Get started
+Quick Image Gen is designed to go from installation to a generated image in a single session. This guide walks through the fastest path: using Pollinations as your provider (free, no API key, no sign-up required), pulling a scene from your current chat as the prompt source, and saving the result as a named Configuration you can reload any time.
 
 <Steps>
-  <Step title="Install">
-    Describe how to install your product or sign up.
 
-    ```bash
-    npm install your-package
-    ```
-  </Step>
-  <Step title="Configure">
-    Describe any setup or configuration needed before first use.
+<Step title="Install the extension">
 
-    ```bash
-    your-cli init
-    ```
-  </Step>
-  <Step title="Run it">
-    Show the first thing a user does to see it working.
+In SillyTavern, open **Extensions → Install from URL** and paste the repository URL:
 
-    ```bash
-    your-cli start
-    ```
-  </Step>
-</Steps>
+```
+https://github.com/platberlitz/sillytavern-image-gen
+```
+
+Wait for the install to finish, then reload SillyTavern when prompted. QIG will appear in your extensions panel.
+
+</Step>
+
+<Step title="Open the QIG panel and complete Quick Setup">
+
+Click the QIG icon in the SillyTavern toolbar to open the panel. On a fresh install the **Quick Setup wizard** opens automatically. It walks you through the minimum settings needed to generate an image:
+
+- **Provider** — which image backend to use
+- **API key** — paste one if the chosen provider requires it
+- **Style** — a visual style preset to wrap your prompt
+
+Work through the wizard steps and click **Finish** when done.
 
 <Tip>
-  Give people a way to get help. This could be a link to a support page, a chat with a customer support agent, or a forum for your product.
-
-  Example: Need help? Reach out to us at [support@yourcompany.com](mailto:support@yourcompany.com).
+  You can reopen the Quick Setup wizard any time by clicking the **Quick Setup** button at the top of the QIG panel. Use it to switch providers or change your default style without digging through settings.
 </Tip>
+
+<Note>
+  Fresh installs include three starter Configurations already set up for free Pollinations models. You can load any of them from the Configuration dropdown at the top of the panel and start generating immediately — no wizard required.
+</Note>
+
+</Step>
+
+<Step title="Pick a provider — Pollinations is the fastest start">
+
+In the Quick Setup wizard (or in **Image Provider & Output** in the main panel), select **Pollinations (Free + Paid)** as your provider. Pollinations requires no API key and defaults to the `flux` model, so you can generate right away without creating any accounts.
+
+If you already have a key for another provider — NovelAI, GPT Image, Stability AI, and others — select it here and paste your key into the **API Key** field that appears.
+
+</Step>
+
+<Step title="Choose a Style preset">
+
+Select a style from the **Style** dropdown. QIG ships 44 built-in presets: **Anime**, **Photorealistic**, **Digital Art**, **Watercolor**, **Cyberpunk**, **Manga**, and many more. Each preset wraps your prompt in a matching prefix and suffix automatically.
+
+Not sure where to start? **Photorealistic** works well for real-world scenes; **Anime** is a strong default for most roleplay contexts.
+
+</Step>
+
+<Step title="Set your Prompt source">
+
+The **Prompt source** selector controls where QIG gets the text it sends to the image provider:
+
+- **Chat scene** *(recommended for roleplay)* — QIG pulls text from the current chat messages and optionally uses your Text AI to rewrite it into a proper image prompt. This is the most contextually accurate option.
+- **Manual** — you type your own prompt directly into the prompt field. Good when you want precise control or are generating something unrelated to the current chat.
+- **AI-tagged** — your Text AI embeds image tags in its replies and QIG generates from those. Requires `Auto-generate after AI response` to be enabled.
+
+For your first generation, select **Chat scene** and make sure you have an active chat open.
+
+</Step>
+
+<Step title="Generate the image">
+
+Click the **Generate** button in the QIG panel, or press **Ctrl+Enter** from anywhere outside a text field. QIG will build the prompt, send it to your chosen provider, and display the result.
+
+The **status line** at the bottom of the panel always shows a summary of your active setup — provider, model, image size, and prompt source — and flags any problems such as a missing API key or an inactive pipeline before you generate.
+
+**Useful keyboard shortcuts:**
+
+| Shortcut | Action |
+|---|---|
+| `Ctrl+Enter` | Generate (configurable in settings) |
+| `Ctrl+Shift+G` | Open the image gallery |
+| `Ctrl+Shift+H` | Open prompt history |
+
+</Step>
+
+<Step title="Save your setup as a Configuration">
+
+Once you have a provider and style you like, save the whole setup as a named **Configuration** so you can reload it in one click. Click the **Save As** button next to the Configuration dropdown at the top of the panel, enter a name, and confirm.
+
+A Configuration stores your provider, API key, model, style, prompt behavior, image size, steps, seed, and reference images together. You can create as many Configurations as you like — for example one per character, one per art style, or one per image provider — and switch between them instantly from the dropdown.
+
+</Step>
+
+</Steps>
+
+## What to explore next
+
+Now that you can generate images, here are the features that unlock the most value for roleplay:
+
+- **Two-step prompt pipeline** — for long or dialogue-heavy chats, enable this under LLM rewrite options. QIG first asks your Text AI to distil the scene into a plain visual description, then reformats it into your selected style. This produces much more focused prompts from complex scenes.
+- **Auto-generation** — enable `Auto-generate after AI response` to fire an image automatically after every AI reply.
+- **Contextual filters** — create keyword-matched rules that automatically add or remove prompt tokens based on scene content (indoor/outdoor, time of day, specific characters present).
+- **Character overrides** — save a dedicated prompt, style, and reference images for a specific character card so every generation featuring that character looks consistent.
+
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/installation">
+    Detailed install steps, update instructions, and rollback guidance.
+  </Card>
+  <Card title="Providers Overview" icon="server" href="/providers/overview">
+    Compare all 18 image backends and their provider-specific options.
+  </Card>
+</CardGroup>

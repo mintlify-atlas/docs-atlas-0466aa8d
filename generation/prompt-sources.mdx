@@ -1,0 +1,83 @@
+---
+title: "Prompt Sources: Where QIG Gets Your Scene"
+sidebarTitle: "Prompt Sources"
+description: "Choose between typing your own prompt, pulling scene context from chat messages, or letting the Text AI tag images automatically inside replies."
+---
+
+QIG gives you three distinct ways to tell it what to draw. **Prompt source** is a single selector in the main panel — everything else in the generation workflow adapts to whichever mode you pick. Understanding each mode helps you choose the right one for your use case: direct control, natural scene illustration from chat, or fully hands-free inject-mode automation.
+
+<Tabs>
+  <Tab title="Manual">
+    In **Manual** mode the text in the prompt field is sent to the image provider exactly as you typed it. No chat context is read, and no message selection UI appears.
+
+    The `{{char}}` and `{{user}}` template placeholders are expanded before the prompt is sent, so you can write reusable prompts like `{{char}} standing in a sunlit library` without editing them per character.
+
+    If **Use LLM to create image prompt** is enabled, the Text AI still rewrites the manual prompt using whichever LLM prompt style you have selected — Tags, Natural, or Custom instruction — before the result goes to the image provider. Manual mode with an LLM rewrite is useful when you have a rough description in mind but want the AI to expand it into a model-appropriate format.
+
+    <Note>
+      The Prompt field dims and displays a note that it is not in use when the source is set to **Chat scene** or **AI-tagged**. Switch back to Manual to make it editable again.
+    </Note>
+  </Tab>
+  <Tab title="Chat Scene">
+    **Chat scene** mode reads one or more messages from the current chat and uses them as scene context. The image provider receives a prompt derived from that chat content rather than the prompt field.
+
+    ### Message range syntax
+
+    The **Message range** field controls which chat messages form the scene. Several shorthand formats are supported:
+
+    | Input | What it selects |
+    | --- | --- |
+    | `-1` | The last (most recent) message |
+    | `last3` | The three newest messages |
+    | `5-9` | Messages 5 through 9 (a specific past moment) |
+    | `-1,3` | A mix — the last message plus message 3 |
+
+    Use a past range like `5-9` when you want to illustrate a moment that happened earlier in the conversation rather than the current state.
+
+    ### Chat-scene generation workflow
+
+    When **Prompt source** is set to Chat scene, QIG collects the selected messages and assembles them into a scene context block. From there, two paths are possible:
+
+    - **Without LLM rewrite**: the assembled scene text is sent directly to the image provider as the prompt. This works if your image model is good at interpreting natural prose (GPT Image, Flux, SDXL).
+    - **With LLM rewrite** (`Use LLM to create image prompt` enabled): the assembled scene is handed to your Text AI first. The Text AI converts it into the selected prompt style — Tags, Natural, or Custom instruction — and the resulting prompt goes to the image provider.
+
+    ### Two-step prompt pipeline
+
+    When Chat scene source, the LLM prompt toggle, and **Use two-step prompt pipeline for chat scenes** are all enabled, QIG runs two separate Text AI calls instead of one:
+
+    <Steps>
+      <Step title="Step 1 — Plain visual scene description">
+        The Text AI is asked to read the selected chat range and produce a single plain-language description of one coherent visual moment: subjects, poses, expressions, clothing, setting, lighting, and camera framing. Dialogue is excluded.
+      </Step>
+      <Step title="Step 2 — Style conversion">
+        The description from Step 1 is handed back to the Text AI with an instruction to convert it into the selected prompt style (Tags or Natural or your Custom instruction). The formatted result becomes the final prompt sent to the image provider.
+      </Step>
+    </Steps>
+
+    The two-step pipeline is most useful for long or dialogue-heavy chats where a single-pass conversion might echo conversation lines or fixate on a minor detail. The first pass distills the scene into one visual moment; the second pass formats that moment cleanly.
+
+    ### Scene description instruction
+
+    The optional **Scene description instruction** field directs Step 1. Leave it empty to use the built-in adaptive instruction, which asks the Text AI to describe subjects, poses, setting, and lighting.
+
+    - **Insert default** — fills the editor with the built-in instruction text so you can read and tweak it without writing one from scratch.
+    - **Reset** — clears the override and returns to the built-in adaptive default.
+
+    Example customizations: `"describe only the environment, not the characters"`, `"focus on the lighting and mood, not individual clothing details"`.
+
+    <Note>
+      The Prompt field dims and shows a note that it is not active when Chat scene is selected. Scene context comes from the chat messages you have ranged, not the prompt field.
+    </Note>
+  </Tab>
+  <Tab title="AI-Tagged">
+    **AI-tagged** mode (inject mode) reverses the workflow. Instead of QIG reading the chat and asking the Text AI for a prompt, QIG instructs the Text AI to emit special image tags inside its chat replies. QIG then extracts those tags and generates images from the embedded prompt text automatically.
+
+    This mode is designed for fully hands-off generation during roleplay: the Text AI decides what image to generate and when, based on the story context it is already writing.
+
+    <Note>
+      Inject mode works only when **Auto-generate after AI response** is also enabled. The prompt field is not used in this mode — prompts come entirely from the tags the Text AI writes into its replies.
+    </Note>
+
+    For full inject-mode configuration — tag name, template, extraction regex, tag handling, and auto-clean settings — see [Inject Mode](/features/inject-mode).
+  </Tab>
+</Tabs>

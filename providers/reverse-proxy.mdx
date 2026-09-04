@@ -1,0 +1,77 @@
+---
+title: "Reverse Proxy Provider — Quick Image Gen"
+sidebarTitle: "Reverse Proxy"
+description: "Connect any OpenAI-compatible image proxy to QIG. Configure endpoint mode, payload mode, reference image handling, SSE, and Chat Image mode."
+---
+
+The `proxy` provider lets you point QIG at any OpenAI-compatible reverse proxy — a self-hosted relay, a multi-model aggregator, or a provider that wraps its own image API behind an OpenAI-style interface. No API key is required to configure the provider, though most real proxies will need one. Select **Reverse Proxy (OpenAI-compatible)** from the provider dropdown to use it.
+
+## Setup
+
+<Steps>
+  <Step title="Enter the proxy base URL">
+    Paste your proxy's base URL into the **Proxy URL** field. A common form is `https://proxy.example/v1`. The endpoint mode setting below determines exactly which path QIG appends.
+  </Step>
+  <Step title="Add an API key (optional)">
+    If your proxy requires authentication, enter the key in the **API Key** field. The key is sent as a Bearer token unless the proxy is configured differently at the proxy level.
+  </Step>
+  <Step title="Review advanced options">
+    The four mode controls — Endpoint, Payload, Reference Images, and SSE — all default to sensible automatic behavior. Adjust them only when your proxy requires a specific combination.
+  </Step>
+</Steps>
+
+## Endpoint mode
+
+Controls which API path QIG posts to.
+
+| Mode | Behavior |
+|---|---|
+| **auto** (default) | Infer the correct endpoint from the base URL. Use this in most cases. |
+| **chat_completions** | Always POST to `chat/completions`. |
+| **images_generations** | Always POST to `images/generations`. |
+
+## Payload mode
+
+Controls which fields are included in the request body.
+
+| Mode | Behavior |
+|---|---|
+| **extended** (default) | Sends standard OpenAI fields plus `width`, `height`, `steps`, `cfg_scale`, `sampler`, `seed`, `negative_prompt`, `loras`, and `facefix`. Use this for proxies built on diffusion backends. |
+| **openai_strict** | Sends only the standard OpenAI image request body (`model`, `prompt`, `n`, `size`, `quality`, `response_format`). Use this when your proxy enforces strict OpenAI schema validation. |
+
+## Reference images
+
+Controls how QIG handles reference images when they are attached to a generation request.
+
+| Mode | Behavior |
+|---|---|
+| **auto** (default) | Inlines non-public URLs (local files, uploaded blobs) to base64 when they are reachable; passes public `https://` URLs directly. |
+| **url_only** | Passes only public `https://` URLs. Rejects local or uploaded images that cannot be expressed as a public URL. |
+| **inline_or_url** | Always inlines non-public URLs to base64 regardless of reachability; accepts everything else as-is. |
+
+## SSE (Server-Sent Events)
+
+Controls whether QIG opens the response as a streaming SSE connection or waits for a single JSON response.
+
+| Mode | Behavior |
+|---|---|
+| **auto** (default) | Enabled when payload mode is `extended`; disabled for `openai_strict`. |
+| **on** | Force SSE on regardless of payload mode. |
+| **off** | Force SSE off regardless of payload mode. |
+
+## New-API Chat Image mode
+
+Some proxy stacks expose image generation through `chat/completions` instead of the standard `/images/generations` route. Enable **New-API Chat Image mode** to configure QIG for those backends.
+
+<Note>
+  **Apply Chat Image Defaults** is a one-click shortcut that pre-fills the most common settings for a chat-based image proxy. It sets the endpoint to `chat/completions`, payload to OpenAI strict, reference images to inline-or-URL, SSE off, instruction source to the latest chat message, and auto-insert to a new assistant message. You can adjust any individual setting after applying defaults.
+</Note>
+
+After enabling Chat Image mode, the following additional settings appear:
+
+| Setting | Default | Description |
+|---|---|---|
+| **Personality / System Prompt** | Built-in default | Sent before the user instruction. The default tells the model to behave as a visual image generation assistant. Use **Reset to default** to restore it. |
+| **Append character and persona context** | Off | Appends the active character card, persona, and outfit details to the request. Turn on when the image model should preserve character identity. |
+| **Max Tokens** | 16384 | Maximum token count for the chat response. Range: 1–65536. |
+| **Permit /images/generations routing** | Off | When off, QIG forces `chat/completions` even if endpoint mode is `auto`. Turn on only when your proxy should be free to choose `/images/generations` through the normal auto-inference logic. |

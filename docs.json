@@ -1,72 +1,75 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
-  "name": "Mintlify Starter Kit",
+  "name": "Quick Image Gen",
+  "theme": "luma",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
-  },
-  "favicon": "/favicon.svg",
-  "navigation": {
-    "pages": [
-      {
-        "group": "Getting Started",
-        "pages": [
-          "index",
-          "quickstart"
-        ]
-      }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
-  },
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
+    "primary": "#7C4DFF",
+    "light": "#EDE7FF",
+    "dark": "#4A148C"
   },
   "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
-      }
-    ],
     "primary": {
-      "type": "button",
-      "label": "Dashboard",
-      "href": "https://app.mintlify.com"
+      "type": "github",
+      "href": "https://github.com/platberlitz/sillytavern-image-gen"
     }
-  },
-  "contextual": {
-    "options": [
-      "copy",
-      "view",
-      "chatgpt",
-      "claude",
-      "perplexity",
-      "mcp",
-      "cursor",
-      "vscode"
-    ]
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "github": "https://github.com/platberlitz/sillytavern-image-gen"
     }
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "installation"
+            ]
+          },
+          {
+            "group": "Generation",
+            "pages": [
+              "generation/prompt-sources",
+              "generation/prompt-system",
+              "generation/style-presets",
+              "generation/batch-and-auto",
+              "generation/configurations"
+            ]
+          },
+          {
+            "group": "Providers",
+            "pages": [
+              "providers/overview",
+              "providers/local-a1111-comfyui",
+              "providers/reverse-proxy",
+              "providers/custom-api"
+            ]
+          },
+          {
+            "group": "Advanced Features",
+            "pages": [
+              "features/contextual-filters",
+              "features/inject-mode",
+              "features/character-context",
+              "features/gallery-and-history"
+            ]
+          },
+          {
+            "group": "Reference",
+            "pages": [
+              "reference/slash-commands",
+              "reference/comfyui-workflow-variables",
+              "reference/server-plugin",
+              "reference/settings-migration"
+            ]
+          }
+        ]
+      }
+    ]
   }
 }

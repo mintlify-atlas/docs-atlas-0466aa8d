@@ -1,0 +1,79 @@
+---
+title: "Configurations: Saving Complete Generation Setups"
+sidebarTitle: "Configurations"
+description: "Save every provider setting, model choice, and prompt behavior into a named Configuration and switch between full setups in one selection."
+---
+
+A **Configuration** is a named snapshot of one complete QIG setup. Switching between a NovelAI anime setup, a local ComfyUI Pony checkpoint, and a GPT Image photorealistic setup is a single dropdown selection rather than re-entering a provider key, model, sampler, and style every time.
+
+<Tip>
+  Use **Save As** to branch a new Configuration whenever you want to experiment with a different style, model, or prompt behavior while keeping your working setup intact. Name them descriptively: `Pony - fantasy portrait`, `GPT Image - cinematic`, `ComfyUI SDXL - landscape`.
+</Tip>
+
+## What a Configuration Stores
+
+One Configuration captures everything a provider needs to generate an image and everything QIG needs to build the prompt:
+
+- **Provider identity** — which provider is selected (NovelAI, GPT Image, Pollinations, local, etc.)
+- **Credentials & endpoints** — API key, endpoint URL
+- **Model selection** — model ID, VAE, text encoders, loader mode
+- **Workflow** — ComfyUI workflow JSON and custom workflow choices
+- **Provider options** — LoRAs, sampler, scheduler, steps, guidance scale, seed
+- **Style** — selected style preset
+- **Prompt behavior** — LLM prompt style (Tags/Natural/Custom), custom instruction, prefill, quality tags, two-step pipeline toggle, identity preservation, World Info toggle
+- **Output sizing** — image width and height (or resolution preset)
+- **Image count** — batch count
+- **Reference images** — provider-specific reference image inputs
+- **Inject options** — inject-mode tag name and related settings that are provider-scoped
+
+## What Is NOT in a Configuration
+
+The following settings are global and are not captured per Configuration. They remain unchanged when you load a different Configuration:
+
+- Automation and delivery settings (auto-generate, delay, auto-set background, auto-insert target)
+- Character overrides (per-character prompt, negative prompt, style, size, references)
+- Contextual Filters and filter pools
+- Context Media
+
+## Managing Configurations
+
+The Configuration dropdown and its three action buttons sit at the top of the QIG panel.
+
+- **Save As** — creates a new Configuration from the current settings with a name you choose.
+- **Update** — writes the current settings back into the selected Configuration, overwriting it.
+- **Delete** — removes the selected Configuration permanently.
+
+Right-clicking the palette button (the quick-generate icon beside the SillyTavern input bar) opens the same Save As / Update / Delete list without opening the full panel.
+
+### Selection Model
+
+The active Configuration name is the one **you are editing**. Changing any value — model, style, sampler, anything — does not automatically deselect or save it. Your changes live in memory until you either:
+
+- Press **Update** to write them back into the selected Configuration.
+- Press **Save As** to create a new Configuration containing those changes, leaving the original untouched.
+
+If you switch to a different Configuration without saving, the unsaved changes are discarded.
+
+## Credential Handling
+
+Configurations hold sensitive data: API keys, endpoint URLs, and reference images. QIG handles them carefully across sync and export boundaries:
+
+- **Sync** — Configurations synchronize to the current SillyTavern account. All fields including credentials travel with the account.
+- **Portable exports** — private values (API keys, endpoint URLs, reference images, ComfyUI workflow JSON) are stripped before export. An exported Configuration file is safe to share.
+- **Import — matching ID** — when an imported Configuration has the same ID as one you already have, QIG updates only the safe fields (style, model name, prompt behavior settings). Your local endpoint, API key, reference images, and workflow are preserved.
+- **Import — unmatched ID** — a Configuration that has no local match creates a new entry containing only the safe fields. No credentials or private values are filled in; you supply those locally after importing.
+
+## Migration from Profiles and Presets
+
+<Warning>
+  **Breaking change in QIG 3.4.0.** Connection Profiles, Generation Presets, and ComfyUI Workflow Presets have been replaced by a single **Configurations** system. This migration happens automatically on first load after upgrading and cannot be reversed without rolling back to a previous version.
+</Warning>
+
+On first load after upgrading to 3.4.0, QIG merges your three old stores into Configurations using these rules:
+
+- Records that share the **exact same name** and a **compatible provider** across two or three old stores are merged into **one Configuration**. In a three-way merge, the ComfyUI Workflow Preset wins over the Generation Preset, which wins over the Connection Profile.
+- Records that do not match anything get their own Configuration. Same-name extras from different stores receive a suffix, for example `Krea (Comfy workflow 2)`.
+
+The three old stores (Connection Profiles, Generation Presets, ComfyUI Workflow Presets) are **left byte-identical** as a rollback copy. They are never written to again after the migration. If you need to roll back to a previous QIG version, the old records are still there and will be recognized by the older code.
+
+New settings exports carry Configurations under the existing `generationPresets` property. They no longer contain a separate `connectionProfiles` or `comfyWorkflows` property. The transfer schema remains at v7.

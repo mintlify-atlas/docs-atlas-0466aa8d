@@ -1,0 +1,72 @@
+---
+title: "Character Context: Per-Character Prompt Control"
+sidebarTitle: "Character Context"
+description: "Combine SillyTavern Style prefixes with QIG character overrides to tailor prompts, styles, and reference images to each individual character."
+---
+
+QIG combines two independent character systems and shows their status together in the **Context** section of the panel. They work in parallel: one is inherited from SillyTavern's own character data, and the other is a QIG-native override that stores a complete generation setup per character. Understanding both systems—and how they compose—gives you precise control over how each character is portrayed.
+
+## SillyTavern Style prefixes
+
+SillyTavern has its own Image Generation Style panel that stores prompt prefix fragments per character. QIG reads and applies these automatically:
+
+- **Common prefix** — a prefix shared across all characters. Always applied.
+- **Character-specific prefix** — a prefix tied to the current character's avatar key. Applied when that character is active in a solo chat.
+
+<Note>
+  Character-specific prefixes are excluded in **group chats**. Only the common prefix applies when multiple characters are present in the same conversation. This prevents one character's prefix from contaminating images of another.
+</Note>
+
+When the local character entry for a prefix is empty, QIG falls back to the shareable `sd_character_prompt` field embedded in the character card data. This allows card authors to distribute a default visual style directly in their cards without requiring the importing user to configure anything manually.
+
+## QIG character overrides
+
+In addition to SillyTavern's prefixes, QIG lets you save a complete generation setup for an individual character. A character override stores:
+
+- Positive prompt
+- Negative prompt
+- Style preset
+- Image size
+- Supported reference images
+
+Use **Save for [character]** to create a new override or update an existing one. Use **Reset override** to remove the character-specific settings and return to your global QIG configuration for that character.
+
+<Tip>
+  The **Preserve character identity** toggle controls QIG's automatic injection of name, skin tone, species, age, body-trait, and canonical-appearance requirements into the prompt. Turn it on (the default) when a character override should be reinforced by these identity anchors; turn it off when generating scenery, objects, or heavily stylized images where those anchors fight the intended look.
+</Tip>
+
+## Composition order
+
+When both systems contribute content, the final prompt is assembled in SillyTavern's standard order:
+
+```
+common prefix → character prefix → generated QIG prompt
+```
+
+If either prefix contains the literal placeholder `{prompt}`, it controls exactly where the QIG prompt is inserted relative to surrounding prefix text—useful when you want the prefix to wrap the generated prompt rather than precede it.
+
+For the negative prompt the order is reversed: the QIG negative comes first, followed by the common negative prefix, then the character-specific negative prefix.
+
+## NBP Director (Nanobanana / Gemini only)
+
+When **NBP mode** is enabled on the Nanobanana provider, QIG prepends director instructions to the prompt. Four presets control the type of direction applied:
+
+<Accordion title="house — TLD House Anime">
+  The house preset applies a comprehensive anime-style director prompt that covers face, skin tone, hair, clothing, legwear, feet, toenails, and anatomical accuracy. Use this as the default for Nanobanana sessions targeting a consistent anime house style.
+</Accordion>
+
+<Accordion title="preservation — Reference Preservation">
+  The preservation preset anchors the generation on a source reference image and restricts changes to the requested region only. Use this when editing a specific area of an existing image while keeping the rest intact.
+</Accordion>
+
+<Accordion title="structural — Anatomy Repair">
+  The structural preset adds director instructions that correct visible limb and digit count errors. Useful as a first pass when a generated image has extra fingers or malformed arms.
+</Accordion>
+
+<Accordion title="custom — Your own director text">
+  Enter any director instructions you want to prepend. This gives full control over what guidance the model receives before the main prompt.
+</Accordion>
+
+An optional **Scene-specific house direction** field adds per-scene instructions on top of whichever preset is active—useful for one-off composition notes without changing your base preset.
+
+**Negative guidance** (enabled by default) appends a fixed list of negative terms covering common defects such as oily skin, extra digits, and malformed anatomy. Disable it only if you need a completely clean negative prompt or are supplying your own equivalent list.

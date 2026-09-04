@@ -1,0 +1,87 @@
+---
+title: "Image Provider Overview — Quick Image Gen"
+sidebarTitle: "Overview"
+description: "All 18 QIG providers at a glance: hosted APIs, local backends, reverse proxy, and custom APIs. Covers API key requirements and credential storage."
+---
+
+Quick Image Gen ships with 18 image-generation backends, ranging from zero-configuration free services to fully self-hosted local pipelines. Every provider is selected from the same **Image Provider & Output** section in the QIG panel, and each one stores its credentials and settings as part of the active Configuration. The sections below describe which providers are available, what they require, and how credentials are kept safe.
+
+<Note>
+  Most providers are **browser-only** — QIG calls the provider API directly from your browser. CivitAI and Replicate require an extra step when SillyTavern runs with `basicAuthMode: true`; see the [Server Plugin](/reference/server-plugin) page for details.
+</Note>
+
+## Provider table
+
+| ID | Name | API Key Required |
+|---|---|---|
+| `pollinations` | Pollinations (Free + Paid) | No |
+| `novelai` | NovelAI | Yes |
+| `gptimage` | GPT Image (OpenAI) | Yes |
+| `arliai` | ArliAI | Yes |
+| `routeway` | Routeway | Yes |
+| `navy` | Navy.ai | Yes |
+| `nanogpt` | NanoGPT | Yes |
+| `chutes` | Chutes | Yes |
+| `civitai` | CivitAI | Yes |
+| `nanobanana` | Nanobanana (Gemini) | Yes |
+| `stability` | Stability AI | Yes |
+| `replicate` | Replicate | Yes |
+| `fal` | Fal.ai | Yes |
+| `together` | Together AI | Yes |
+| `zai` | Z.AI | Yes |
+| `local` | Local (A1111 / ComfyUI) | No |
+| `proxy` | Reverse Proxy (OpenAI-compatible) | No |
+| `custom` | Custom API | Optional |
+
+## Provider notes
+
+<Accordion title="Pollinations (Free + Paid)">
+  The default model is `flux`, which requires no account or API key. Paid models include NanoBanana variants, Grok, Pruna, Nova Canvas, Seedream, Wan, and GPT Image 1/1.5. Some paid models require Pollinations authentication; QIG will prompt you when the selected model needs it. The full list of free vs. paid models is fetched live from the Pollinations API when you open the provider settings.
+</Accordion>
+
+<Accordion title="NovelAI">
+  Defaults to `nai-diffusion-4-5-curated`. Resolution presets are available to match NovelAI's officially supported dimensions. You can override the endpoint and API key if you route NovelAI calls through a proxy — enter a proxy URL and optional key in the provider settings.
+</Accordion>
+
+<Accordion title="GPT Image (OpenAI)">
+  Defaults to `gpt-image-2`. Configurable controls include quality level, output format, background style, and moderation level. URL routing rules apply when a proxy is used: a proxy URL that ends in `/v1` automatically expands to `/v1/images/generations`; any other path is tried as the exact POST endpoint first. Comfy-style `/proxy/openai` namespaces that report a missing proxy route are retried once at `/proxy/openai/images/generations`.
+</Accordion>
+
+<Accordion title="Nanobanana (Gemini)">
+  Four models are available, ranging from Gemini 2.0 Flash Exp through Nano Banana Pro (Gemini 3 Pro Image). **NBP mode** activates optional director presets and negative guidance. Native Gemini proxy bases use `generateContent`; full `/chat/completions` URLs use an OpenAI-compatible request body instead.
+</Accordion>
+
+<Accordion title="Navy.ai and Routeway">
+  Both providers accept model ID suggestions and support custom model names entered manually. Images are returned as base64 from these providers, so no separate image-fetch step is needed.
+</Accordion>
+
+<Accordion title="Z.AI">
+  Defaults to `cogview-4-250304`. HD quality is enabled by default.
+</Accordion>
+
+<Accordion title="CivitAI and Replicate">
+  Both providers route through SillyTavern's built-in CORS proxy, which is blocked by `basicAuthMode` when the request also needs its own `Authorization` header. If you run SillyTavern with `basicAuthMode: true`, install the optional server plugin to relay these requests. See [Server Plugin](/reference/server-plugin) for setup instructions.
+</Accordion>
+
+## API key storage
+
+Provider API keys are stored in QIG extension settings and in Configurations. Both storage locations are scoped to the current SillyTavern server account and synchronized to it, but neither is end-to-end encrypted by QIG. Treat your browser and server configuration storage as sensitive.
+
+Settings exports protect credentials by design: **API keys, endpoint URLs, reference images, and all Custom API trust fields are omitted from portable settings exports by default.** Importing a Configuration from another account creates a safe shell with no private values; your local keys are never overwritten by an import.
+
+## Quick links
+
+<CardGroup cols={2}>
+  <Card title="Local Backends (A1111 / ComfyUI)" icon="computer" href="/providers/local-a1111-comfyui">
+    Run generation entirely on your own hardware using Automatic1111 WebUI or ComfyUI.
+  </Card>
+  <Card title="Reverse Proxy" icon="arrows-left-right" href="/providers/reverse-proxy">
+    Connect any OpenAI-compatible image proxy, including chat-completions-based routes.
+  </Card>
+  <Card title="Custom API" icon="code" href="/providers/custom-api">
+    Write a declarative request template for any image service not covered by a built-in provider.
+  </Card>
+  <Card title="Server Plugin" icon="plug" href="/reference/server-plugin">
+    Required for CivitAI and Replicate when SillyTavern runs with basicAuthMode enabled.
+  </Card>
+</CardGroup>

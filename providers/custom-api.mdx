@@ -1,0 +1,107 @@
+---
+title: "Custom API Provider — Quick Image Gen"
+sidebarTitle: "Custom API"
+description: "Connect any image service to QIG with a declarative JSON template. Covers request templates, auth modes, async job polling, and configuration portability."
+---
+
+The `custom` provider lets you connect QIG to any image generation service that isn't covered by a built-in backend. You describe the request using a declarative JSON template, point at an endpoint, choose an authentication mode, and QIG handles the rest — including async polling and multipart form uploads. No code changes or server plugin are needed.
+
+Select **Custom API** from the provider dropdown to use it.
+
+## Starter mappings
+
+QIG ships four starter templates you can select from the **New Configuration** dialog to get started quickly. Each one pre-fills the relevant fields for a common request pattern:
+
+| Starter | Pattern |
+|---|---|
+| **OpenAI-compatible images** | JSON request with `model`, `prompt`, `negative_prompt`, `size`, and `n`; reads the first image under `/data/0`. |
+| **Simple JSON REST** | Maps prompt, negative prompt, dimensions, steps, guidance, sampler, and seed to ordinary JSON fields. |
+| **Async job API** | Submits a JSON job, reads its ID from the response, then polls a URL containing `{{jobId}}` until a configured success or failure status appears. |
+| **Multipart upload** | Sends scalar fields and an optional reference image as multipart form data. |
+
+## Request templates
+
+Templates are plain **JSON objects**, not scripts. They are static data structures with optional placeholder tokens that QIG fills in before sending the request.
+
+### Available tokens
+
+| Token | Type when alone | Description |
+|---|---|---|
+| `{{prompt}}` | String | Positive image prompt |
+| `{{negative}}` | String | Negative image prompt |
+| `{{model}}` | String | Selected model name |
+| `{{width}}` | Number | Output width in pixels |
+| `{{height}}` | Number | Output height in pixels |
+| `{{size}}` | String | Dimensions as `WxH` (e.g. `1024x768`) |
+| `{{steps}}` | Number | Sampling step count |
+| `{{cfgScale}}` | Number | CFG / guidance scale |
+| `{{sampler}}` | String | Sampler name |
+| `{{seed}}` | Number | Random seed |
+| `{{referenceImages}}` | Array | All attached reference images as base64 data URLs |
+| `{{firstReferenceImage}}` | String | The first reference image as a base64 data URL, or empty string |
+
+**Type preservation rule:** when a JSON value is *exactly* one token (the entire string is `{{token}}`), numbers and arrays retain their native JSON type. When a token appears *inline* within a larger string, it is converted to a string.
+
+### Example: Simple JSON REST template
+
+```json
+{
+  "prompt": "{{prompt}}",
+  "negative_prompt": "{{negative}}",
+  "width": "{{width}}",
+  "height": "{{height}}",
+  "num_inference_steps": "{{steps}}",
+  "guidance_scale": "{{cfgScale}}",
+  "scheduler": "{{sampler}}",
+  "seed": "{{seed}}"
+}
+```
+
+In the example above, `"{{width}}"` is the entire string value, so QIG substitutes the numeric width and the field becomes a JSON number in the rendered request.
+
+### JSON Pointers for response fields
+
+Use [RFC 6901](https://www.rfc-editor.org/rfc/rfc6901) JSON Pointers (starting with `/`) to tell QIG where to find the image, job ID, and job status in the response body. For example, `/data/0/url` navigates to `response.data[0].url`.
+
+Image results may be:
+- An `https://` URL or a same-origin URL
+- A `base64` string or `data:image/...;base64,` data URL
+- A common image object with recognized fields (`url`, `b64_json`, `base64`, `image_base64`, `inlineData`, etc.)
+- A direct `image/*` HTTP response body (no JSON parsing needed)
+
+## Async polling
+
+When mode is set to **Async job API**, QIG submits the initial request, extracts the job ID using the **Job ID path** pointer, then polls the **Polling URL** (which must contain `{{jobId}}`) until the status field matches one of the configured success or failure values.
+
+| Setting | Allowed range | Default |
+|---|---|---|
+| Poll interval | 250 ms – 60 seconds | 1 second |
+| Total timeout | 1 second – 30 minutes | 2 minutes |
+
+Transient HTTP errors (408, 425, 429, and 5xx) are retried within the total timeout rather than immediately failing the job.
+
+## Authentication modes
+
+| Mode | Behavior |
+|---|---|
+| **None** | No authentication header or parameter is added. |
+| **Bearer** | Sends `Authorization: Bearer <key>`. |
+| **Named header** | Sends a custom header (e.g. `X-API-Key: <key>`). |
+| **Named query parameter** | Appends `?paramName=<key>` to the request URL. |
+| **Basic** | Encodes `username:password` as `Authorization: Basic <base64>`. |
+
+Credentials **cannot** be embedded directly in request templates. They must be entered in the dedicated API key field so QIG can handle them safely.
+
+## Safety
+
+<Warning>
+  Custom API definitions — including endpoints, authentication credentials, request mappings, polling rules, and reference images — are **excluded from portable settings exports** and from reproducible image metadata. A named Custom Configuration can travel as an inert shell (name and safe display fields only). Importing a Configuration with the same ID preserves your existing local definition; it cannot supply or replace it. **Recreate Custom API definitions in each account** rather than relying on exports to carry them.
+</Warning>
+
+Additional safety constraints enforced at runtime:
+
+- Requests run **directly in your browser**, not through a SillyTavern server relay.
+- Redirects are **rejected**; QIG does not follow them.
+- JSON and image response sizes are **bounded** and enforced.
+- Authentication over plain HTTP is only permitted for loopback addresses; all remote endpoints with auth must use HTTPS.
+- The endpoint must allow your SillyTavern origin through **CORS**; QIG cannot bypass a browser CORS restriction.

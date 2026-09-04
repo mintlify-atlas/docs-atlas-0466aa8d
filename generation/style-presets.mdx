@@ -1,0 +1,64 @@
+---
+title: "Style Presets: Wrapping Prompts in Visual Styles"
+sidebarTitle: "Style Presets"
+description: "Apply one of 44 built-in style presets to wrap your prompt in a visual aesthetic, with character overrides and SillyTavern Style prefixes composing on top."
+---
+
+QIG ships 44 built-in style presets. Each preset wraps your prompt in a style-specific prefix and suffix that push the image provider toward a recognizable visual aesthetic — anime line art, oil paint impasto, film noir shadows, or pixel art dithering, among many others. Selecting a preset requires no prompt changes; the wrapping is applied automatically before the prompt reaches the image provider.
+
+<Tip>
+  For booru-trained models (NovelAI, Illustrious, Pony, anime SD checkpoints) pair your chosen style with the **Tags (Danbooru)** LLM prompt style — both systems use tag-format vocabulary and reinforce each other. For GPT Image, Nanobanana/Gemini, or Flux, use **Natural (Description)** — these models read the style prefix as a written art direction note and respond well to it alongside prose scene descriptions.
+</Tip>
+
+## All 44 Built-in Styles
+
+Select a style by its display name in the panel. The ID is the internal value stored in Configurations and used in the prompt pipeline.
+
+| Style | ID | Style | ID |
+| --- | --- | --- | --- |
+| None | `none` | Ghibli | `ghibli` |
+| Anime | `anime` | Ukiyo-e | `ukiyoe` |
+| Photorealistic | `photorealistic` | Art Nouveau | `artnouveau` |
+| Digital Art | `digitalart` | Art Deco | `artdeco` |
+| Oil Painting | `oilpainting` | Impressionist | `impressionist` |
+| Watercolor | `watercolor` | Surrealist | `surrealist` |
+| Pencil Sketch | `pencilsketch` | Pop Art | `popart` |
+| Ink Drawing | `inkdrawing` | Minimalist | `minimalist` |
+| Pixel Art | `pixelart` | Gothic | `gothic` |
+| 3D Render | `render3d` | Steampunk | `steampunk` |
+| Cyberpunk | `cyberpunk` | Vaporwave | `vaporwave` |
+| Fantasy | `fantasy` | Low Poly | `lowpoly` |
+| Comic Book | `comicbook` | Isometric | `isometric` |
+| Manga | `manga` | Stained Glass | `stainedglass` |
+| Chibi | `chibi` | Graffiti | `graffiti` |
+| Dark Fantasy | `darkfantasy` | Charcoal | `charcoal` |
+| Moe Anime | `moeanime` | Pastel | `pastel` |
+| 90s Anime | `retroanime` | Film Noir | `filmnoir` |
+| Vintage Photo | `vintagephoto` | Polaroid | `polaroid` |
+| Cinematic | `cinematic` | Portrait | `portrait` |
+| Landscape | `landscape` | Macro | `macro` |
+| Abstract | `abstract` | Psychedelic | `psychedelic` |
+
+Select **None** (`none`) to send the prompt without any style prefix or suffix. This is the right choice when your prompt already specifies its own aesthetic, when you are using a custom instruction that handles style, or when the image provider applies its own style model (some Pollinations models, for example).
+
+## Character Style Overrides
+
+QIG can save a per-character style — along with prompt, negative prompt, image size, and reference images — in a **character override**. When an override exists for the current character, it takes the place of the global style selection while that character is active.
+
+This means a character built for anime illustration can always use `moeanime` while another built for cinematic photography defaults to `cinematic`, without you switching the style selector manually when you change characters.
+
+For the full character override workflow, see [Character Context](/features/character-context).
+
+## SillyTavern Style Prefix Composition
+
+QIG reads SillyTavern's native Image Generation Style panel and incorporates any configured prefix text automatically. The composition order is:
+
+1. **Common prefix** — the prefix shared across all characters in SillyTavern's Style panel.
+2. **Character prefix** — the avatar-keyed prefix for the current character (excluded in group chats; common prefix still applies).
+3. **QIG prompt** — the assembled prompt from QIG's own style preset, LLM rewrite, and source text.
+
+A literal `{prompt}` token anywhere in a SillyTavern prefix controls where the QIG prompt is inserted. If no `{prompt}` token is present, the QIG prompt is appended after the prefix.
+
+The negative prompt follows the reverse composition: QIG's negative prompt first, then the SillyTavern common and character-specific negative prefixes.
+
+When a character's local SillyTavern entry is empty, QIG reads the shareable `sd_character_prompt` card data if it is present on the character card.

@@ -1,0 +1,111 @@
+---
+title: "QIG Relay Server Plugin Reference"
+sidebarTitle: "Server Plugin"
+description: "Install and configure the optional QIG relay server plugin that enables CivitAI and Replicate support when SillyTavern runs in basicAuthMode."
+---
+
+SillyTavern's built-in CORS proxy is blocked by `basicAuthMode` when a provider request also needs its own `Authorization` header. This affects CivitAI and Replicate when running in browser-only mode. The Quick Image Gen relay plugin works around this by forwarding those specific provider requests through the SillyTavern server process, where the authorization conflict does not exist.
+
+The relay ships as an optional SillyTavern server plugin at protocol version **0.3.0**, introduced in **QIG 3.4.0**.
+
+<Warning>
+SillyTavern server plugins are not sandboxed. Only install server plugins from developers you trust. Review the plugin source before installing.
+</Warning>
+
+## Installation
+
+<Steps>
+  <Step title="Copy the plugin directory">
+    Copy the `server-plugin/` directory from your QIG installation into SillyTavern as `plugins/quick-image-gen-relay/`.
+
+    The result should be a directory at `<SillyTavern root>/plugins/quick-image-gen-relay/` containing `index.js`, `pre-parser.js`, `relay-guards.js`, and related files.
+  </Step>
+
+  <Step title="Enable server plugins in config.yaml">
+    Open SillyTavern's `config.yaml` and set:
+
+    ```yaml
+    enableServerPlugins: true
+    ```
+  </Step>
+
+  <Step title="Install the required host pre-parser">
+    Complete the mandatory pre-parser integration described in the [Required Host Pre-Parser Integration](#required-host-pre-parser-integration) section below before proceeding.
+  </Step>
+
+  <Step title="Restart SillyTavern">
+    Stop and restart the SillyTavern server so the plugin and pre-parser are loaded.
+  </Step>
+
+  <Step title="Verify with the health check">
+    While logged into SillyTavern, open:
+
+    ```
+    /api/plugins/quick-image-gen-relay/healthz
+    ```
+
+    - **HTTP 204** (blank page) — the plugin and required pre-parser installer are both registered. The relay is working.
+    - **HTTP 503** — the relay has failed closed because the pre-parser installer is missing. Return to Step 3.
+  </Step>
+</Steps>
+
+## Required Host Pre-Parser Integration
+
+The SillyTavern/SillyBunny plugin API mounts server plugins **after** the host-wide JSON body parser, which is configured with a 500 MiB limit. A parser mounted only inside the plugin cannot protect the relay path from oversized unauthenticated body parsing. The relay therefore fails closed (HTTP 503) unless `pre-parser.js` is mounted on the exact relay URL prefix **before** the host's global `express.json()` and `express.urlencoded()` calls.
+
+<Note>
+The HTTP 503 fallback prevents upstream relay calls but cannot undo body parsing the host has already performed. Do not expose the SillyTavern host to untrusted networks until this integration is installed.
+</Note>
+
+In `src/server-main.js`, add the following lines **immediately after** `const app = express();` and **before** any host body parser middleware:
+
+```js
+const relayPlugin = await import('../plugins/quick-image-gen-relay/pre-parser.js');
+const { installRelayPreParser } = relayPlugin.default ?? relayPlugin;
+installRelayPreParser(app);
+```
+
+The relative path assumes the standard `src/server-main.js` and `plugins/quick-image-gen-relay/` layout. What this integration does:
+
+- Mounts the relay middleware stack on the exact relay URL prefix (`/api/plugins/quick-image-gen-relay`).
+- Applies to every POST under that prefix, including Express case and trailing-slash aliases and unknown routes.
+- Acquires global and per-address upload concurrency before reading the request body.
+- Rejects non-JSON and declared-oversized requests immediately.
+- Parses the body at a 1 MiB limit, well below the host's 500 MiB limit.
+- Records that installation for the health check endpoint.
+
+The normal SillyTavern authentication chain still runs afterward. The plugin routes independently require an authenticated `req.user` and apply a separate per-account concurrency limit. If a relay POST arrives after the host parser has already run (indicating a mounting order mistake), the relay detects this and responds with HTTP 503 rather than silently accepting the oversized-parse risk.
+
+## Health Check Endpoint
+
+```
+GET /api/plugins/quick-image-gen-relay/healthz
+```
+
+| Status | Meaning |
+|---|---|
+| **HTTP 204** | Plugin loaded and required pre-parser installer registered. Relay is operational. |
+| **HTTP 503** | Relay disabled — pre-parser installer is missing. |
+
+Authentication is required to reach the health check endpoint (SillyTavern's standard auth chain applies).
+
+## Security
+
+The relay is intentionally narrow in scope.
+
+**What it relays:**
+
+- CivitAI v2 consumer workflows: create, status poll, and `DELETE` cancellation.
+- Replicate predictions: create, status poll, and cancellation.
+- Provider output retrieval for both providers.
+
+**Limits and constraints:**
+
+- Provider output retrieval is restricted to trusted CivitAI and Replicate HTTPS hostnames (including `civitai.red` and `replicate.delivery`) with a maximum response size of **25 MiB**.
+- JSON relay request bodies and responses have separate, smaller bounded limits.
+- All buffered upstream responses share a **100 MiB** in-flight reservation budget across concurrent requests.
+- Provider API keys are used only to build the upstream `Authorization` header for the current request. They are never stored or logged.
+- Output requests are unauthenticated by default. Credentials are forwarded to output URLs only when explicitly requested and only when the output URL's origin exactly matches the CivitAI orchestration or Replicate API origin.
+- Does not accept arbitrary target URLs — it is not a general-purpose open proxy.
+
+**CivitAI cancellation** follows the live CivitAI v2 OpenAPI specification: authenticated `DELETE /v2/consumer/workflows/{workflowId}` (the `DeleteWorkflow` / `deleteWorkflow()` operation from the official JavaScript client).

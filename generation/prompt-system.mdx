@@ -1,0 +1,150 @@
+---
+title: "Prompt System: LLM Rewrites & Prompt Tools"
+sidebarTitle: "Prompt System"
+description: "Configure how QIG uses your Text AI to build image prompts — LLM styles, quality tags, wildcards, prefill, and the staged prompt review editor."
+---
+
+When **Use LLM to create image prompt** is enabled, QIG passes your source content to the connected Text AI before it reaches the image provider. The Text AI converts the scene — whether that is a typed description, selected chat messages, or the two-step pipeline output — into a format that your image model actually responds well to. This section covers every option that affects how that conversion happens, plus quality tags, wildcards, and the prompt review system.
+
+## LLM Prompt Styles
+
+Three style modes control the output format the Text AI is asked to produce.
+
+### Tags (Danbooru)
+
+The Text AI outputs a comma-separated tag list in Danbooru/Booru format:
+
+```
+1girl, long hair, blue eyes, school uniform, sitting, smile, looking_at_viewer, classroom, window, sunlight, masterpiece, best quality
+```
+
+QIG's built-in Tags instruction tells the model to categorize output into character name, physical traits, clothing and accessories, pose and expression, background and setting, and quality tags. The instruction explicitly forbids realistic-style tags and common artist names that pollute booru-style checkpoints.
+
+### Natural (Description)
+
+The Text AI outputs a prose image generation prompt:
+
+```
+A young woman with long auburn hair sits at a wooden desk by a rain-streaked window, 
+chin resting on her hand, expression distant and contemplative. Warm afternoon light 
+filters through sheer curtains, casting soft shadows across stacked textbooks. 
+Highly detailed, sharp focus, cinematic framing.
+```
+
+QIG's built-in Natural instruction asks the model to describe characters with their defining visual traits, poses, expressions, setting, lighting, atmosphere, and high-quality visual details.
+
+### Custom Instruction
+
+You write the system prompt that directs the conversion. Two helper buttons pre-fill the editor with the actual built-in instruction text so you have a working starting point:
+
+- **Insert Tags default** — loads the built-in Tags (Danbooru) instruction template.
+- **Insert Natural default** — loads the built-in Natural (Description) instruction template.
+- **Reset** — clears your override so the built-in adaptive default is used again.
+
+<Note>
+  Leaving the custom instruction box empty means "use the built-in default". Existing setups are unaffected — they behave exactly as before whether you open the box or not.
+</Note>
+
+## Use-Case Guide
+
+<Accordion title="Prefill — stop commentary and markdown wrapping">
+  **Prefill** pre-writes the first words of the Text AI's reply. The model continues from those words instead of starting fresh, which prevents it from wrapping the prompt in commentary ("Sure! Here's your image prompt: ..."), adding markdown fences, or drifting out of format.
+
+  A prefill of `Image prompt:` locks the reply shape from the first token. For Tags style, a prefill of `1girl,` or the character's name tag immediately anchors the output as a tag list.
+
+  Use prefill whenever your model produces well-formatted prompts sometimes but not reliably — it is cheaper and more targeted than switching to a different style or writing a stricter instruction.
+</Accordion>
+
+<Accordion title="Tags style — booru-trained image models">
+  Use **Tags (Danbooru)** for image models trained on booru datasets: NovelAI, Illustrious, Pony, and most anime Stable Diffusion checkpoints. These models learn from tagged images and respond to comma-separated terms. Full sentences confuse their attention mechanism and produce weaker results.
+
+  Turn on quality/lighting/artist tags (the additional booru toggles) alongside this style for booru checkpoints. Leave them off for GPT Image or Gemini-class models, which handle the description themselves.
+</Accordion>
+
+<Accordion title="Natural style — instruction-following image models">
+  Use **Natural (Description)** for instruction-following image models: GPT Image, Nanobanana/Gemini, Flux, and photorealistic SDXL merges. These models are designed to interpret written scene descriptions and produce images that match them. Tag lists feel mechanical to them and typically produce less coherent results.
+</Accordion>
+
+<Accordion title="Custom instruction — full control over conversion format">
+  **Custom instruction** gives you complete control over what the Text AI outputs. Use it to:
+
+  - Force a fixed camera angle or art medium in every prompt.
+  - Apply a house tagging scheme specific to your workflow (e.g., always include a studio-style background tag).
+  - Output prompts in a different language for a multilingual image model.
+  - Add constraints the built-in instructions do not cover.
+
+  Start from **Insert Tags default** or **Insert Natural default** rather than a blank box — the built-in templates are readable and well-structured, and editing them is faster than writing a new instruction from scratch.
+</Accordion>
+
+<Accordion title="Two-step pipeline — long or dialogue-heavy chats">
+  The **two-step prompt pipeline** is for Chat scene generation where a single-pass conversion might echo dialogue, reproduce speaker labels verbatim, or fixate on a minor detail rather than the visual moment.
+
+  The first pass asks the Text AI to distill the selected messages into one plain visual description. The second pass converts that description into the selected prompt style. This costs one extra Text AI call per generation.
+
+  Direct the first pass with the **Scene description instruction** field — for example: `"describe only the environment, not the characters"` or `"focus on mood and lighting; ignore dialogue"`. Leave it empty to use the built-in adaptive instruction.
+</Accordion>
+
+<Accordion title="Review before generating — learn what every toggle changes">
+  **Review before generating** opens a staged editor before each Text AI request is sent. You can read and edit the assembled context, see intermediate results like the scene summary, inspect LLM Contextual Filter classification, and review the final positive and negative prompt before anything is sent to the image provider.
+
+  It is the fastest way to understand what any combination of toggles actually produces. Use it when tuning custom instructions, debugging unexpected prompt content, or learning how filters interact with a particular scene.
+</Accordion>
+
+<Accordion title="Preserve character identity — species, age, canonical appearance">
+  **Preserve character identity** keeps QIG's added name, skin tone, species, age, body-trait, and canonical-appearance requirements in the Text AI request. It is on by default.
+
+  Turn it off when generating scenery, objects, or abstract concepts where character details are irrelevant. Also turn it off when identity enforcement conflicts with a heavily stylized look — some style presets work better when the character enforcement rules are not present.
+
+  Turning it off removes only QIG's enforcement rules, not the selected scene context, character card, or persona.
+</Accordion>
+
+<Accordion title="Include matched World Info — canonical lore in the request">
+  **Include matched World Info in Text AI context** adds World Info entries whose keywords appear in the selected scene (canonical outfits, locations, races). Constant entries always insert; keyword entries insert when they match the scene text or recent messages.
+
+  Matched lore appears in the editable Text AI request. It is not appended directly to the image-provider prompt — the Text AI uses it as context when composing the description.
+
+  This option is off by default because private lore may be sent to the selected Text AI or override profile. Enable it only when the lore is safe to share with those endpoints.
+</Accordion>
+
+<Accordion title="Separate AI for image prompts — use a different model">
+  **Use separate AI for image prompts** sends the Text AI conversion requests to a Connection Manager profile instead of your main chat model. That profile sees only QIG's request — not the broader chat history — keeping the two models cleanly separated.
+
+  If your custom instruction references "the conversation so far", set **Chat history messages** above `0`. That many recent messages (ending at the scene being illustrated; hidden messages and QIG's own image messages are skipped) are prepended to the request.
+
+  This option is off by default. When it is on, a failed separate-AI profile does not fall back to the main chat model, so private text is never disclosed to another provider by accident.
+</Accordion>
+
+## Quality Tags
+
+When **Append quality tags to prompt** is enabled, QIG prepends a fixed tag string to every outgoing prompt. The default value is:
+
+```
+masterpiece, best quality, highly detailed, sharp focus, 8k
+```
+
+Quality tags are most useful for booru-trained checkpoints that weight them explicitly. For GPT Image, Nanobanana/Gemini, or Flux-based models, the plain scene description is usually sufficient — these models respond to explicit quality requirements in the description rather than booru-style tag weighting.
+
+## Wildcards
+
+Add inline choices anywhere in the prompt or negative-prompt fields using curly braces and pipe separators:
+
+```
+{day|night|sunset} sky over the city, {empty street|crowded market|rain-soaked alley}
+```
+
+One option from each group is picked at random every time an image is generated. In a batch of four images the wildcard rolls independently for each, so you can explore variations in lighting, setting, or mood without writing four separate prompts.
+
+<Note>
+  File-based `__wildcard_name__` expansion (reading wildcard lists from files) is not currently supported by QIG. Only inline `{option1|option2|option3}` syntax works.
+</Note>
+
+## Prompt Review
+
+**Review before generating** opens a staged editor that shows every stage of the prompt pipeline before anything is sent. The stages are:
+
+1. **Text AI request** — the assembled scene context, character identity rules, World Info lore, and conversion instruction. Editable before it is sent to the Text AI.
+2. **Scene summary** (two-step pipeline only) — the plain visual description produced by the first pass. Editable; going back re-runs the Text AI with your edited request rather than skipping it.
+3. **LLM Contextual Filter classification** — any concept-match filter checks that ask the Text AI whether a condition is present. Shown and editable.
+4. **Final positive / negative prompt** — the fully assembled prompt after QIG styles, quality tags, SillyTavern Style, and Contextual Filters have been applied. This is the last stage before wildcard expansion and provider-specific wrappers.
+
+Edits at the final stage are **authoritative**: QIG does not re-apply style prefixes, quality tags, or filter tokens after you save your changes at this stage. The prompt you write there is the prompt that gets sent.

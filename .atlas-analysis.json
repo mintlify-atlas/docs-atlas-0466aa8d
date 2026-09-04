@@ -1,0 +1,92 @@
+{
+  "projectType": "general",
+  "projectName": "Quick Image Gen",
+  "projectDescription": "A SillyTavern extension for AI image generation supporting 18 providers, 44 style presets, LLM-assisted prompting, contextual filters, batch generation, and a full local backend integration for A1111 and ComfyUI.",
+  "theme": "luma",
+  "primaryColor": "#7C4DFF",
+  "lightColor": "#EDE7FF",
+  "darkColor": "#4A148C",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "installation"
+            ]
+          },
+          {
+            "group": "Generation",
+            "pages": [
+              "generation/prompt-sources",
+              "generation/prompt-system",
+              "generation/style-presets",
+              "generation/batch-and-auto",
+              "generation/configurations"
+            ]
+          },
+          {
+            "group": "Providers",
+            "pages": [
+              "providers/overview",
+              "providers/local-a1111-comfyui",
+              "providers/reverse-proxy",
+              "providers/custom-api"
+            ]
+          },
+          {
+            "group": "Advanced Features",
+            "pages": [
+              "features/contextual-filters",
+              "features/inject-mode",
+              "features/character-context",
+              "features/gallery-and-history"
+            ]
+          },
+          {
+            "group": "Reference",
+            "pages": [
+              "reference/slash-commands",
+              "reference/comfyui-workflow-variables",
+              "reference/server-plugin",
+              "reference/settings-migration"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "18 image generation backends (cloud and local) plus configurable custom APIs",
+    "44 built-in style presets with prefix/suffix wrapping",
+    "Three LLM prompt modes: Tags (Danbooru), Natural, and Custom instruction",
+    "Two-step chat-scene prompt pipeline for long or dialogue-heavy chats",
+    "Contextual Filters: keyword, AND/OR, and LLM-concept match with prompt modification",
+    "Batch generation (1–10 images) with sequential seeds and batch viewer",
+    "Auto-generation after AI responses with configurable frequency and delay",
+    "Inject mode: AI-tagged prompt extraction from chat replies",
+    "Named Configurations storing complete provider + prompt + generation setups",
+    "A1111 full control (ADetailer, Hires Fix, IP-Adapter, ControlNet)",
+    "ComfyUI custom workflow support with placeholder variables and choice discovery",
+    "Character overrides and SillyTavern Style prefix inheritance",
+    "Server relay plugin for CivitAI and Replicate behind basicAuthMode",
+    "Slash commands (/qig, /qig-auto, /qig-cancel) for Quick Replies automation",
+    "Gallery (IndexedDB), prompt history, and per-session generation logs"
+  ],
+  "publicApiSurface": [
+    "/qig command: mode=direct|palette|inject, quiet=true, trailing prompt text",
+    "/qig-auto command: state=on|off|toggle, every=N, delay=ms",
+    "/qig-cancel command",
+    "Ctrl+Enter (configurable): trigger generation",
+    "Ctrl+Shift+G: open gallery",
+    "Ctrl+Shift+H: open prompt history",
+    "ComfyUI workflow placeholders: %prompt%, %negative%, %seed%, %width%, %height%, %steps%, %cfg%, %denoise%, %clip_skip%, %clip_stop_at_layer%, %sampler%, %scheduler%, %model%, %reference_image%, %batch_index%, %batch_count%, %client_id%, %filename_prefix%",
+    "Custom API request template tokens: {{prompt}}, {{negative}}, {{model}}, {{width}}, {{height}}, {{size}}, {{steps}}, {{cfgScale}}, {{sampler}}, {{seed}}, {{referenceImages}}, {{firstReferenceImage}}",
+    "Server plugin health endpoint: GET /api/plugins/quick-image-gen-relay/healthz",
+    "Inject tag formats: <image>prompt</image>, <pic prompt=\"prompt\">"
+  ]
+}

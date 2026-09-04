@@ -1,0 +1,101 @@
+---
+title: "How to Install Quick Image Gen in SillyTavern (QIG)"
+sidebarTitle: "Installation"
+description: "Install, update, and roll back Quick Image Gen using SillyTavern's built-in extension manager — no manual file copying required."
+---
+
+Quick Image Gen installs through SillyTavern's built-in extension manager in under a minute. There are no files to copy manually and no build step — paste the repository URL, wait for the download, and reload. Updates and rollbacks follow the same path from inside the SillyTavern UI.
+
+<Note>
+  Quick Image Gen requires **SillyTavern 1.14.0 or newer**. It depends on extension manifest v3 and media-array support added in that release. Check your SillyTavern version before installing.
+</Note>
+
+## Install
+
+<Steps>
+
+<Step title="Open the extension installer">
+
+In SillyTavern, navigate to **Extensions → Install from URL**. This opens a small dialog with a URL input field.
+
+</Step>
+
+<Step title="Paste the repository URL">
+
+Copy the URL below and paste it into the field:
+
+```
+https://github.com/platberlitz/sillytavern-image-gen
+```
+
+</Step>
+
+<Step title="Wait for install and reload">
+
+Click **Install** (or the equivalent confirm button). SillyTavern will download the extension from GitHub. When the install completes, reload the page when prompted. Quick Image Gen will appear in your extensions panel, and the QIG icon will be added to the SillyTavern toolbar.
+
+</Step>
+
+</Steps>
+
+## Update
+
+QIG sets `auto_update: true` in its manifest, so SillyTavern can keep it current automatically. To trigger a manual update at any time:
+
+1. Open **Extensions → Manage extensions**.
+2. Find **Quick Image Gen** in the list.
+3. Click **Update**.
+
+SillyTavern will fetch the latest commit from the `main` branch and reload the extension. Your settings, Configurations, character overrides, Contextual Filters, gallery, and prompt history are preserved across updates.
+
+## Rollback
+
+If an update introduces a problem with your setup, you can switch back to the previous version line without leaving SillyTavern.
+
+<Warning>
+  Rolling back does **not** delete your settings. All options you configured on the newer version are preserved in storage — they are simply ignored by the older code until you return to `main`. Returning to `main` restores full access to any settings added by newer versions.
+</Warning>
+
+<Steps>
+
+<Step title="Open Manage extensions">
+
+Navigate to **Extensions → Manage extensions** and locate **Quick Image Gen**.
+
+</Step>
+
+<Step title="Open the branch selector and pick a previous-version branch">
+
+Click the branch selector for Quick Image Gen. You will see `main` (always the current release) and one or more `v<major.minor>` branches. Each `v<major.minor>` branch is pinned at the last release of that version line — for example, `v2.8` holds the final 2.x release.
+
+Select the branch you want to roll back to, for example **v2.8**.
+
+</Step>
+
+<Step title="Reload when prompted">
+
+SillyTavern will switch the extension to the selected branch. Reload the page when prompted. QIG will run at the older version.
+
+</Step>
+
+</Steps>
+
+### Branch policy
+
+| Branch | Contents |
+|---|---|
+| `main` | Always the current release (3.4.0 as of this writing) |
+| `v<major.minor>` | Last release of the previous version line, kept for rollback |
+
+When a new version line begins, a `v<major.minor>` branch is created and frozen at the final release of the outgoing line. Only one previous-line branch is maintained at a time.
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Pick a provider, run the Quick Setup wizard, and generate your first image.
+  </Card>
+  <Card title="Providers Overview" icon="server" href="/providers/overview">
+    Compare all 18 image backends and their configuration options.
+  </Card>
+</CardGroup>

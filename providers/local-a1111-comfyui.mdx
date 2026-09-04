@@ -1,0 +1,214 @@
+---
+title: "Local Backends — A1111 and ComfyUI in Quick Image Gen"
+sidebarTitle: "Local Backends"
+description: "Configure QIG's local provider for Automatic1111 WebUI or ComfyUI. Covers extra controls, custom workflows, LoRAs, and cancellation behavior."
+---
+
+The `local` provider runs image generation entirely on your own machine, sending requests to either Automatic1111 WebUI (A1111) or ComfyUI. No API key is required; both backends communicate over HTTP on your local network. Select **Local (A1111 / ComfyUI)** from the provider dropdown and then choose which backend to use with the **Local Type** control that appears below it.
+
+<Tabs>
+  <Tab title="A1111">
+
+    ## Setup
+
+    <Steps>
+      <Step title="Select the provider">
+        In the QIG panel, open **Image Provider & Output** and choose **Local (A1111 / ComfyUI)** as the provider. Set **Local Type** to **A1111**.
+      </Step>
+      <Step title="Enter your WebUI URL">
+        Paste the base URL of your running Automatic1111 instance (for example `http://127.0.0.1:7860`). WebUI must be started with the `--api` flag and CORS headers enabled. Without `--api`, the image generation endpoint is unavailable; without CORS, the browser will block the request.
+      </Step>
+      <Step title="Verify connection">
+        QIG fetches the model list from WebUI automatically. If the model dropdown populates, the connection is working.
+      </Step>
+    </Steps>
+
+    ## Extra controls
+
+    A1111 exposes several extension modules that QIG supports directly. All of these controls are optional and only applied when the corresponding feature is enabled.
+
+    <Accordion title="ADetailer">
+      Runs inpainting passes on detected face and hand regions after the main generation. QIG provides two independent ADetailer slots:
+
+      | Control | Description |
+      |---|---|
+      | Model | Detection model (e.g. `face_yolov8n.pt`). Slot 1 typically targets faces; slot 2 targets hands. |
+      | Prompt | Custom positive prompt for the inpainting pass. Leave empty to inherit the main prompt. |
+      | Negative Prompt | Custom negative prompt for the inpainting pass. |
+      | Denoising Strength | How strongly the inpainted region is redrawn (0–1). |
+      | Confidence | Detection confidence threshold (0–1). Lower values detect more regions. |
+      | Mask Blur | Pixel blur applied to the detection mask border. |
+      | Dilate/Erode | Expands (positive) or shrinks (negative) the detection mask in pixels. |
+      | Inpaint Only Masked | When on, only the masked region is processed at full resolution. |
+      | Inpaint Padding | Padding in pixels added around the masked region. |
+      | Pixel Perfect | Automatically scales the input to match the preprocessor's resolution requirements. |
+      | Resize Mode | How the input image is resized to fit the detection window. |
+    </Accordion>
+
+    <Accordion title="Hires Fix">
+      Upscales the initial low-resolution latent before decoding, improving fine detail in large images.
+
+      | Control | Description |
+      |---|---|
+      | Upscaler | Upscaling algorithm (e.g. `R-ESRGAN 4x+`, `Latent`). |
+      | Scale | Final image scale multiplier relative to the base resolution. |
+      | Steps | Number of sampling steps for the hires pass (0 inherits from main). |
+      | Denoising Strength | How much the upscaled image is changed by the hires pass. |
+      | Sampler | Sampler used in the hires pass. Leave empty to inherit from the main pass. |
+      | Scheduler | Scheduler used in the hires pass. |
+      | Prompt | Positive prompt for the hires pass (overrides main prompt when set). |
+      | Negative Prompt | Negative prompt for the hires pass. |
+      | Resize Mode | How the latent is resized before the hires pass. |
+    </Accordion>
+
+    <Accordion title="IP-Adapter">
+      Guides generation using a reference image's visual features (style, composition, or face identity).
+
+      | Control | Description |
+      |---|---|
+      | FaceID Portrait Mode | Uses a FaceID-capable adapter for face-identity transfer instead of general style. |
+      | Weight | How strongly the reference image influences the output (0–1). |
+      | Pixel Perfect | Automatically adjusts input resolution to the adapter's requirements. |
+      | Resize Mode | How the reference image is resized before the adapter processes it. |
+      | Control Mode | Balances influence between the prompt and the reference image. |
+      | Start Step | Fraction of total steps at which the adapter starts influencing generation. |
+      | End Step | Fraction of total steps at which the adapter stops influencing generation. |
+    </Accordion>
+
+    <Accordion title="ControlNet">
+      Applies structural or stylistic constraints derived from a control image (depth map, edge map, pose skeleton, etc.).
+
+      | Control | Description |
+      |---|---|
+      | Model | ControlNet model (e.g. `control_v11p_sd15_openpose`). |
+      | Module | Preprocessor that converts the control image into the expected format. |
+      | Weight | Strength of the ControlNet constraint. |
+      | Resize Mode | How the control image is resized to match the output dimensions. |
+      | Control Mode | Balances between prompt guidance and ControlNet guidance. |
+      | Pixel Perfect | Calculates the preprocessor resolution automatically. |
+      | Guidance Start | Fraction of steps at which ControlNet begins guiding. |
+      | Guidance End | Fraction of steps at which ControlNet stops guiding. |
+      | Control Image | The image used as the structural reference. |
+    </Accordion>
+
+    <Accordion title="Other controls">
+      | Control | Description |
+      |---|---|
+      | VAE | Override the active VAE. Leave blank to use the checkpoint's bundled VAE. |
+      | CLIP Skip | Number of CLIP encoder layers to skip from the end (higher values = looser adherence). |
+      | Scheduler | Noise schedule used during sampling. |
+      | Restore Faces | Post-process the output with a face restoration model (e.g. CodeFormer). |
+      | Tiling | Generate a seamlessly tileable image. |
+      | Subseed | Secondary seed used to interpolate between two different random states. |
+      | Subseed Strength | How strongly the subseed influences the output (0 = main seed only, 1 = subseed only). |
+      | Save to WebUI | Write the output image to WebUI's own output directory in addition to returning it to QIG. |
+    </Accordion>
+
+    ## Cancellation
+
+    <Note>
+      Cancelling a QIG generation **does not interrupt a shared A1111 server** unless you have explicitly enabled the opt-in setting. This prevents QIG from stopping another user's work when multiple clients share one WebUI instance. When the opt-in is off and you cancel, QIG releases its own interface immediately but the request continues running on the server.
+    </Note>
+
+    ## Saved model or VAE not in the list
+
+    If a model or VAE that was previously saved to your Configuration is no longer reported by the server, QIG keeps it selected and marks it as `(not on server)` rather than silently replacing it with the first item in the list. This prevents accidental model swaps when the server is temporarily connected to a different WebUI instance.
+
+  </Tab>
+  <Tab title="ComfyUI">
+
+    ## Setup
+
+    <Steps>
+      <Step title="Select the provider and backend">
+        In the QIG panel, open **Image Provider & Output**, choose **Local (A1111 / ComfyUI)** as the provider, and set **Local Type** to **ComfyUI**.
+      </Step>
+      <Step title="Start ComfyUI with CORS enabled">
+        ComfyUI must be started with CORS enabled so the browser can reach its API. The API runs on a separate port from the UI; note that port number and use it as the QIG base URL (for example `http://127.0.0.1:8188`).
+      </Step>
+      <Step title="Refresh models">
+        Click **Refresh** in the model section. QIG queries ComfyUI for available checkpoints, UNETs, CLIP encoders, and VAEs and populates the dropdowns.
+      </Step>
+    </Steps>
+
+    ## Model Loader
+
+    ComfyUI supports two classes of model file, and QIG uses a **Model Loader** selector to match:
+
+    | Mode | Use case |
+    |---|---|
+    | **Checkpoint** | Monolithic `.safetensors` or `.ckpt` files with CLIP and VAE embedded (most SD 1.5, SDXL, and Illustrious checkpoints). |
+    | **Diffusion / UNET** | Diffusion-only files that require external CLIP and VAE filenames (most Flux models). |
+
+    Switching the loader mode causes the model list to refresh and show only files compatible with the selected loader.
+
+    ### Diffusion / UNET options
+
+    When **Diffusion / UNET** is selected, additional fields appear:
+
+    | Control | Description |
+    |---|---|
+    | CLIP Model 1 | Required. First CLIP encoder filename. |
+    | CLIP Model 2 | Optional second CLIP encoder for dual-CLIP models. |
+    | VAE Model | Required. VAE filename. |
+    | CLIP Type | Architecture hint for the CLIP loader (default `flux`). |
+    | Skip Negative Prompt | When enabled, the negative text encoder is wired to the positive output, effectively disabling negative prompting. |
+
+    ## Custom Workflow JSON
+
+    Paste a **ComfyUI API Format** export into the **Custom Workflow JSON** field to use your own graph instead of QIG's built-in workflow. Regular visual exports from the ComfyUI interface are rejected — you must use **Save (API Format)** from the ComfyUI menu.
+
+    <Warning>
+      ComfyUI workflows are executable programs. A workflow may invoke custom nodes with arbitrary filesystem or network side effects on your ComfyUI server. Review any workflow JSON before saving or running it. **Full settings exports omit executable Comfy graph bodies and custom workflow overrides**; your local graph and overrides remain unchanged by imports.
+    </Warning>
+
+    See [ComfyUI Workflow Variables](/reference/comfyui-workflow-variables) for the full placeholder table, typed-value rules, and numbered reference image syntax.
+
+    ## Output selection
+
+    | Control | Description |
+    |---|---|
+    | **Output Node IDs** | Comma-separated list of node IDs whose output images are returned. Leave empty to collect images from all output nodes. |
+    | **Image Index** | Which image to return from each matching output node. `-1` (default) returns all images. A non-negative integer returns only that position. |
+
+    ## Custom workflow choices
+
+    When a Custom Workflow JSON is loaded, click **Inspect workflow choices**. QIG queries ComfyUI's object_info endpoint for only the node classes used by that graph, then exposes direct text inputs for every dropdown choice those nodes advertise. This covers third-party model loaders and other custom-node options without requiring free-text guessing.
+
+    - Overrides apply **after** placeholder substitution, so an override value is always a literal, never a second substitution pass.
+    - Overrides **never** change node classes or connections.
+    - An override **drops silently** when the graph's own raw value changes (i.e. when you update the workflow JSON and the original value no longer matches).
+    - Overrides stay with your local SillyTavern account; portable exports omit them and imports ignore them.
+
+    ## LoRAs
+
+    In the built-in workflow (no custom JSON), the **LoRAs** field accepts a comma-separated list of `name:weight` pairs, for example `my_lora:0.8, another_lora:1.0`. LoRA nodes are injected automatically into the built-in graph. Custom workflows receive only values represented by placeholders — QIG does not inject LoRA or upscale nodes into custom graphs.
+
+    ## Additional controls
+
+    | Control | Description |
+    |---|---|
+    | CLIP Skip | Layers to skip from the end of the CLIP encoder. |
+    | Denoise | Denoising strength applied to the KSampler. |
+    | Scheduler | Noise schedule (e.g. `karras`, `exponential`). |
+    | Upscale Model | Upscaling model for the built-in workflow's upscale pass. |
+    | Timeout | Maximum time in seconds to wait for ComfyUI to complete generation. |
+
+    ## Saved model not on the server
+
+    A saved ComfyUI model, CLIP encoder, or VAE that the server does not report in its current file list stays selected and is marked `(not on server)`. It is never silently replaced by the first item in the list.
+
+    ## Cancellation
+
+    QIG's ComfyUI cancellation follows a strict priority order:
+
+    1. **Targeted Jobs API** (`/api/jobs/{promptId}/cancel`) — used first when the server reports support, or when QIG detects the endpoint.
+    2. **Queue API** (`/queue` with `delete`) — removes the job from the pending queue without touching running work.
+    3. **Legacy interrupt** — **disabled by default**. Enable **Allow targeted legacy interrupt** only as an explicit opt-in on shared servers, because older `/interrupt` implementations may stop another user's running job.
+
+    <Note>
+      QIG **never** sends a bodyless global interrupt automatically. The legacy interrupt path requires an explicit opt-in specifically because it poses a shared-server risk.
+    </Note>
+
+  </Tab>
+</Tabs>
