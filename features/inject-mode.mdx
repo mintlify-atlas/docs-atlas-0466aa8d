@@ -1,5 +1,5 @@
 ---
-title: "Inject Mode: AI-Authored Image Tags"
+title: "Inject Mode: Automatic Images from AI-Authored Tags"
 sidebarTitle: "Inject Mode"
 description: "Let your Text AI embed image tags in chat replies, then have QIG automatically extract and generate images from each tagged prompt."
 ---
@@ -9,7 +9,7 @@ Inject mode hands prompt authorship to your Text AI. Instead of QIG pulling cont
 Inject is **auto-only**. To use it, set **Prompt source** to `AI-tagged` and enable **Auto-generate after AI response**. Manual generation does not apply to this mode.
 
 <Note>
-  `mode=inject` with `quiet=true` is not supported. The inject pipeline requires a prompt to exist inside the AI's reply tag; there is nothing to run quietly without one.
+  `mode=inject` with `quiet=true` is not supported. The `quiet` flag on `/qig` works by taking a prompt you supply directly and returning the saved image path without posting to chat. Inject mode generates from tags the AI writes in its own replies—you cannot supply a prompt directly, so there is nothing for the quiet path to act on.
 </Note>
 
 ## How it works

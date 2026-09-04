@@ -1,5 +1,5 @@
 ---
-title: "Prompt System: LLM Rewrites & Prompt Tools"
+title: "Prompt System: LLM Styles, Quality Tags, Wildcards"
 sidebarTitle: "Prompt System"
 description: "Configure how QIG uses your Text AI to build image prompts — LLM styles, quality tags, wildcards, prefill, and the staged prompt review editor."
 ---
@@ -14,7 +14,7 @@ Three style modes control the output format the Text AI is asked to produce.
 
 The Text AI outputs a comma-separated tag list in Danbooru/Booru format:
 
-```
+```text
 1girl, long hair, blue eyes, school uniform, sitting, smile, looking_at_viewer, classroom, window, sunlight, masterpiece, best quality
 ```
 
@@ -24,7 +24,7 @@ QIG's built-in Tags instruction tells the model to categorize output into charac
 
 The Text AI outputs a prose image generation prompt:
 
-```
+```text
 A young woman with long auburn hair sits at a wooden desk by a rain-streaked window, 
 chin resting on her hand, expression distant and contemplative. Warm afternoon light 
 filters through sheer curtains, casting soft shadows across stacked textbooks. 
@@ -118,7 +118,7 @@ You write the system prompt that directs the conversion. Two helper buttons pre-
 
 When **Append quality tags to prompt** is enabled, QIG prepends a fixed tag string to every outgoing prompt. The default value is:
 
-```
+```text
 masterpiece, best quality, highly detailed, sharp focus, 8k
 ```
 
@@ -128,7 +128,7 @@ Quality tags are most useful for booru-trained checkpoints that weight them expl
 
 Add inline choices anywhere in the prompt or negative-prompt fields using curly braces and pipe separators:
 
-```
+```text
 {day|night|sunset} sky over the city, {empty street|crowded market|rain-soaked alley}
 ```
 

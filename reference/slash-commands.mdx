@@ -1,5 +1,5 @@
 ---
-title: "Slash Commands & Keyboard Shortcuts"
+title: "Quick Image Gen Slash Commands and Keyboard Shortcuts"
 sidebarTitle: "Slash Commands"
 description: "Complete reference for QIG slash commands /qig, /qig-auto, and /qig-cancel, plus keyboard shortcuts for generation, gallery, and history."
 ---
@@ -24,19 +24,19 @@ Generate an image from the current settings. Accepts an optional mode override, 
 
 **Standard generation with a one-off prompt:**
 
-```
+```text
 /qig a close-up portrait of a knight in silver armour
 ```
 
 **Force direct mode for one run:**
 
-```
+```text
 /qig mode=direct a close-up portrait of a knight in silver armour
 ```
 
 **Quiet mode for use with Hopper, Quick Replies, or other extensions:**
 
-```
+```text
 /qig quiet=true a sunrise landscape over misty mountains
 ```
 
@@ -56,19 +56,19 @@ Show the current auto-generation state or change it. Running `/qig-auto` with no
 
 **Check current state without changing it:**
 
-```
+```text
 /qig-auto
 ```
 
 **Enable auto-generation and set it to fire every 3 AI replies with a 1-second delay:**
 
-```
+```text
 /qig-auto state=on every=3 delay=1000
 ```
 
 **Toggle auto-generation on or off:**
 
-```
+```text
 /qig-auto state=toggle
 ```
 
@@ -78,7 +78,7 @@ Show the current auto-generation state or change it. Running `/qig-auto` with no
 
 Cancel the active generation request. Takes no arguments. QIG releases the interface immediately and requests provider-side cancellation where supported, though remote work may continue when a provider cannot cancel an already-accepted job.
 
-```
+```text
 /qig-cancel
 ```
 
@@ -102,13 +102,13 @@ The `Ctrl+Enter` generate shortcut can be reassigned in QIG settings. The galler
 
 The `/qig` command works naturally in Quick Replies. Bind a QR button to generate a portrait with a single click:
 
-```
+```text
 /qig mode=direct a close-up portrait
 ```
 
 Combine quiet mode with other extensions to pass a generated image path into a follow-up action:
 
-```
+```text
 /qig quiet=true a sunrise landscape
 ```
 

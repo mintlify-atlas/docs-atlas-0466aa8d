@@ -1,5 +1,5 @@
 ---
-title: "QIG Relay Server Plugin Reference"
+title: "QIG Relay Server Plugin: Installation and Security"
 sidebarTitle: "Server Plugin"
 description: "Install and configure the optional QIG relay server plugin that enables CivitAI and Replicate support when SillyTavern runs in basicAuthMode."
 ---
@@ -40,7 +40,7 @@ SillyTavern server plugins are not sandboxed. Only install server plugins from d
   <Step title="Verify with the health check">
     While logged into SillyTavern, open:
 
-    ```
+    ```text
     /api/plugins/quick-image-gen-relay/healthz
     ```
 
@@ -78,7 +78,7 @@ The normal SillyTavern authentication chain still runs afterward. The plugin rou
 
 ## Health Check Endpoint
 
-```
+```text
 GET /api/plugins/quick-image-gen-relay/healthz
 ```
 

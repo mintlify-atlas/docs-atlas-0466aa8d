@@ -203,11 +203,11 @@ The `local` provider runs image generation entirely on your own machine, sending
     QIG's ComfyUI cancellation follows a strict priority order:
 
     1. **Targeted Jobs API** (`/api/jobs/{promptId}/cancel`) — used first when the server reports support, or when QIG detects the endpoint.
-    2. **Queue API** (`/queue` with `delete`) — removes the job from the pending queue without touching running work.
-    3. **Legacy interrupt** — **disabled by default**. Enable **Allow targeted legacy interrupt** only as an explicit opt-in on shared servers, because older `/interrupt` implementations may stop another user's running job.
+    2. **Legacy interrupt** (`/interrupt` with `prompt_id`) — attempted for **running** jobs only, and only when **Allow targeted legacy interrupt** is explicitly enabled. Disabled by default because older `/interrupt` implementations may stop another user's running job on a shared server.
+    3. **Queue API** (`/queue` with `delete`) — removes the job from the pending queue. Used when the job is queued or its state is unknown and the Jobs API is not available.
 
     <Note>
-      QIG **never** sends a bodyless global interrupt automatically. The legacy interrupt path requires an explicit opt-in specifically because it poses a shared-server risk.
+      QIG **never** sends a bodyless global interrupt automatically. The legacy interrupt path requires an explicit opt-in specifically because it poses a shared-server risk. When neither the Jobs API nor the legacy interrupt is available, a **running** job cannot be safely cancelled and QIG releases its own interface without stopping server-side work.
     </Note>
 
   </Tab>

@@ -1,5 +1,5 @@
 ---
-title: "Character Context: Per-Character Prompt Control"
+title: "Character Context: Per-Character Prompts and Overrides"
 sidebarTitle: "Character Context"
 description: "Combine SillyTavern Style prefixes with QIG character overrides to tailor prompts, styles, and reference images to each individual character."
 ---
@@ -32,7 +32,7 @@ In addition to SillyTavern's prefixes, QIG lets you save a complete generation s
 Use **Save for [character]** to create a new override or update an existing one. Use **Reset override** to remove the character-specific settings and return to your global QIG configuration for that character.
 
 <Tip>
-  The **Preserve character identity** toggle controls QIG's automatic injection of name, skin tone, species, age, body-trait, and canonical-appearance requirements into the prompt. Turn it on (the default) when a character override should be reinforced by these identity anchors; turn it off when generating scenery, objects, or heavily stylized images where those anchors fight the intended look.
+  The **Preserve character identity** toggle controls QIG's automatic injection of name, skin tone, species, age, body-trait, and canonical-appearance requirements into the prompt. It is on by default. Turn it off when generating scenery, objects, or heavily stylized images where identity enforcement fights the intended look—it does not affect the character card, persona, or scene context used to build the prompt.
 </Tip>
 
 ## Composition order
